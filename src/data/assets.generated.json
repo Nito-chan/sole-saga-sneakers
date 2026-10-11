@@ -1,0 +1,246 @@
+{
+  "hero": {
+    "count": 72,
+    "desktop": {
+      "dir": "/assets/hero/desktop/",
+      "w": 1000,
+      "h": 702,
+      "kb": 3894
+    },
+    "mobile": {
+      "dir": "/assets/hero/mobile/",
+      "w": 560,
+      "h": 393,
+      "kb": 1744
+    },
+    "flickerSuspects": [
+      72
+    ]
+  },
+  "base": {
+    "front34": {
+      "src": "/assets/base/base-front34.webp",
+      "w": 1600,
+      "h": 1299
+    },
+    "rear34": {
+      "src": "/assets/base/base-rear34.webp",
+      "w": 1600,
+      "h": 1394
+    },
+    "side": {
+      "src": "/assets/base/base-side.webp",
+      "w": 1600,
+      "h": 1022
+    },
+    "top": {
+      "src": "/assets/base/base-top.webp",
+      "w": 545,
+      "h": 1400
+    }
+  },
+  "showcase": {
+    "sole-pushin": {
+      "src": "/assets/showcase/showcase-sole-pushin.mp4",
+      "poster": "/assets/showcase/showcase-sole-pushin-poster.webp",
+      "w": 1280,
+      "h": 720,
+      "duration": 10.0
+    },
+    "side-glide": {
+      "src": "/assets/showcase/showcase-side-glide.mp4",
+      "poster": "/assets/showcase/showcase-side-glide-poster.webp",
+      "w": 1280,
+      "h": 720,
+      "duration": 10.0
+    },
+    "laces-detail": {
+      "src": "/assets/showcase/showcase-laces-detail.mp4",
+      "poster": "/assets/showcase/showcase-laces-detail-poster.webp",
+      "w": 1280,
+      "h": 720,
+      "duration": 9.625
+    },
+    "exploded": {
+      "src": "/assets/showcase/showcase-exploded.mp4",
+      "poster": "/assets/showcase/showcase-exploded-poster.webp",
+      "w": 1280,
+      "h": 720,
+      "duration": 10.0
+    }
+  },
+  "colors": [
+    {
+      "id": "01",
+      "slug": "pastel",
+      "src": "/assets/colors/color-01-pastel.webp",
+      "w": 2000,
+      "h": 1200
+    },
+    {
+      "id": "02",
+      "slug": "tomato-soda",
+      "src": "/assets/colors/color-02-tomato-soda.webp",
+      "w": 2000,
+      "h": 1200
+    },
+    {
+      "id": "03",
+      "slug": "butter-cocoa",
+      "src": "/assets/colors/color-03-butter-cocoa.webp",
+      "w": 2000,
+      "h": 1200
+    },
+    {
+      "id": "04",
+      "slug": "acid-matcha",
+      "src": "/assets/colors/color-04-acid-matcha.webp",
+      "w": 2000,
+      "h": 1200
+    },
+    {
+      "id": "05",
+      "slug": "cobalt-pop",
+      "src": "/assets/colors/color-05-cobalt-pop.webp",
+      "w": 2000,
+      "h": 1200
+    },
+    {
+      "id": "06",
+      "slug": "chrome-noir",
+      "src": "/assets/colors/color-06-chrome-noir.webp",
+      "w": 2000,
+      "h": 1200
+    }
+  ],
+  "anime": [
+    {
+      "id": "01",
+      "slug": "naruto",
+      "sneaker": "/assets/anime/anime-01-naruto-sneaker.webp",
+      "character": "/assets/anime/anime-01-naruto-character.webp",
+      "sneakerSize": [
+        1600,
+        1000
+      ],
+      "characterSize": [
+        1200,
+        1600
+      ],
+      "palette": {
+        "primary": "#F07931",
+        "deep": "#3D1F0D",
+        "accent": "#2F99D9",
+        "text": "#FFFFFF"
+      }
+    },
+    {
+      "id": "02",
+      "slug": "itachi",
+      "sneaker": "/assets/anime/anime-02-itachi-sneaker.webp",
+      "character": "/assets/anime/anime-02-itachi-character.webp",
+      "sneakerSize": [
+        1600,
+        1000
+      ],
+      "characterSize": [
+        1200,
+        1600
+      ],
+      "palette": {
+        "primary": "#B23E4C",
+        "deep": "#3D151A",
+        "accent": "#5767D9",
+        "text": "#FFFFFF"
+      }
+    },
+    {
+      "id": "03",
+      "slug": "sasuke",
+      "sneaker": "/assets/anime/anime-03-sasuke-sneaker.webp",
+      "character": "/assets/anime/anime-03-sasuke-character.webp",
+      "sneakerSize": [
+        1600,
+        1000
+      ],
+      "characterSize": [
+        1200,
+        1600
+      ],
+      "palette": {
+        "primary": "#5964B2",
+        "deep": "#22253D",
+        "accent": "#D98757",
+        "text": "#FFFFFF"
+      }
+    },
+    {
+      "id": "04",
+      "slug": "zoro",
+      "sneaker": "/assets/anime/anime-04-zoro-sneaker.webp",
+      "character": "/assets/anime/anime-04-zoro-character.webp",
+      "sneakerSize": [
+        1600,
+        1000
+      ],
+      "characterSize": [
+        1200,
+        1600
+      ],
+      "palette": {
+        "primary": "#E19B70",
+        "deep": "#3D2F27",
+        "accent": "#87D957",
+        "text": "#0D0B14"
+      }
+    },
+    {
+      "id": "05",
+      "slug": "gojo",
+      "sneaker": "/assets/anime/anime-05-gojo-sneaker.webp",
+      "character": "/assets/anime/anime-05-gojo-character.webp",
+      "sneakerSize": [
+        1600,
+        1000
+      ],
+      "characterSize": [
+        1200,
+        1600
+      ],
+      "palette": {
+        "primary": "#5144B2",
+        "deep": "#1C173D",
+        "accent": "#E4FF26",
+        "text": "#FFFFFF"
+      }
+    }
+  ],
+  "fx": {
+    "inkDark": {
+      "src": "/assets/fx/fx-ink-dark.mp4",
+      "duration": 3.0
+    },
+    "speedlines": {
+      "src": "/assets/fx/fx-speedlines.webp",
+      "w": 2400,
+      "h": 1340
+    },
+    "halftone": {
+      "src": "/assets/fx/fx-halftone.webp",
+      "w": 1024,
+      "h": 572
+    },
+    "cityNight": {
+      "src": "/assets/fx/bg-city-night.webp",
+      "w": 2400,
+      "h": 1340
+    }
+  },
+  "_options": {
+    "cutout": "rembg",
+    "model": "isnet-general-use",
+    "flipColors": true,
+    "flipAnimeSneakers": true,
+    "flipCharacters": false
+  }
+}

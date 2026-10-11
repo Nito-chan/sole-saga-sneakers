@@ -1,0 +1,103 @@
+{
+  "meta": {
+    "title": "SOLE SAGA — Anime-inspired sneakers (concept)",
+    "description": "A concept drop of anime-inspired sneakers. Scroll to explore the sneaker, every colorway and the full roster.",
+    "themeColor": "#FBF8FF",
+    "lang": "en"
+  },
+  "brand": { "name": "SOLE SAGA", "short": "SAGA", "tagline": "Walk into the story." },
+  "nav": [
+    { "label": "Anatomy", "href": "#anatomy" },
+    { "label": "Colors", "href": "#colors" },
+    { "label": "Roster", "href": "#anime" },
+    { "label": "Drop", "href": "#drop" }
+  ],
+  "cta": { "label": "Join the waitlist", "href": "#drop" },
+  "hero": {
+    "eyebrow": "DROP 001 · ANIME-INSPIRED SNEAKERS",
+    "line1": "WALK INTO",
+    "line2": "THE STORY.",
+    "sub": "Anime-inspired sneakers for the ones who live in the scene. Soft shapes, loud stories.",
+    "primary": { "label": "Join the waitlist", "href": "#drop" },
+    "secondary": { "label": "Scroll to explore", "href": "#anatomy" },
+    "bgWord": "KICKS",
+    "scrollHint": "Scroll",
+    "chips": [
+      { "label": "Air-cushion heel", "x": 8, "y": 24 },
+      { "label": "Suede + mesh upper", "x": 70, "y": 30 },
+      { "label": "Padded collar", "x": 60, "y": 80 }
+    ]
+  },
+  "marquee": { "items": [], "separator": "✦", "autoExtra": ["DROP 001", "LIMITED RUN", "ANIME-INSPIRED"] },
+  "anatomy": {
+    "eyebrow": "ANATOMY",
+    "beats": [
+      { "clip": "sole-pushin", "title": "Air that shows off.", "body": "A visible air-cushion heel softens every landing and looks good doing it.", "bg": "#EFE9FB",
+        "callouts": [ { "label": "Air-cushion heel", "dot": [70, 64], "at": [84, 38] } ] },
+      { "clip": "side-glide", "title": "Layers on layers.", "body": "Wavy overlays stack suede, leather and mesh into one flowing line.", "bg": "#FBE9F2",
+        "callouts": [ { "label": "Layered overlays", "dot": [48, 42], "at": [40, 12] }, { "label": "Padded collar", "dot": [78, 28], "at": [86, 10] } ] },
+      { "clip": "laces-detail", "title": "Locked in.", "body": "Flat laces, a sculpted tongue and a padded collar hold you in place.", "bg": "#E6F4EE",
+        "callouts": [ { "label": "Flat laces", "dot": [44, 50], "at": [16, 24] }, { "label": "Sculpted tongue", "dot": [58, 26], "at": [80, 14] } ] },
+      { "clip": "exploded", "title": "Every layer, one silhouette.", "body": "See how each part fits together before it becomes the shoe.", "bg": "#E7EFFB",
+        "callouts": [ { "label": "Upper", "dot": [50, 38], "at": [16, 20] }, { "label": "Outsole", "dot": [50, 80], "at": [82, 88] } ] }
+    ]
+  },
+  "angles": {
+    "eyebrow": "ALL ANGLES",
+    "title": "Every angle is the good angle.",
+    "bgWord": "ANGLES",
+    "labels": { "front34": "FRONT 3/4", "side": "SIDE", "rear34": "REAR 3/4", "top": "TOP" }
+  },
+  "colors": {
+    "eyebrow": "COLORWAYS",
+    "cta": "Join the waitlist",
+    "items": [
+      { "id": "01", "name": "COTTON CANDY", "tagline": "Soft on the eyes. Loud on the street.", "bg": "#EADFFB", "text": "#0D0B14", "specs": ["Premium suede and breathable mesh", "Visible air-cushion heel", "Numbered limited run"] },
+      { "id": "02", "name": "TOMATO SODA", "tagline": "Fizz-red energy for every step.", "bg": "#F4776E", "text": "#FFFFFF", "specs": ["Premium suede and breathable mesh", "Visible air-cushion heel", "Numbered limited run"] },
+      { "id": "03", "name": "BUTTER & COCOA", "tagline": "Warm tones, zero effort.", "bg": "#F5D76E", "text": "#3B2412", "specs": ["Premium suede and breathable mesh", "Visible air-cushion heel", "Numbered limited run"] },
+      { "id": "04", "name": "ACID MATCHA", "tagline": "Neon green. No apologies.", "bg": "#C6F135", "text": "#0D0B14", "specs": ["Premium suede and breathable mesh", "Visible air-cushion heel", "Numbered limited run"] },
+      { "id": "05", "name": "COBALT POP", "tagline": "Electric blue with an orange spark.", "bg": "#2B4EFF", "text": "#FFFFFF", "specs": ["Premium suede and breathable mesh", "Visible air-cushion heel", "Numbered limited run"] },
+      { "id": "06", "name": "CHROME NOIR", "tagline": "After-dark armor.", "bg": "#111114", "text": "#F3F3F7", "specs": ["Premium suede and breathable mesh", "Visible air-cushion heel", "Numbered limited run"] }
+    ]
+  },
+  "anime": {
+    "eyebrow": "THE ROSTER",
+    "cta": "Pre-order this pair",
+    "rosterTitle": "THE FULL ROSTER",
+    "rosterCta": "Join the waitlist",
+    "items": [
+      { "id": "01", "name": "AUTO", "epithet": "THE HERO", "line": "Loud, loyal and never out of the fight.", "theme": "auto" },
+      { "id": "02", "name": "AUTO", "epithet": "THE RIVAL", "line": "Cold stare. Colder comebacks.", "theme": "auto" },
+      { "id": "03", "name": "AUTO", "epithet": "THE BLADE", "line": "Three moves ahead, always.", "theme": "auto" },
+      { "id": "04", "name": "AUTO", "epithet": "THE MYSTIC", "line": "Calm on the outside. Chaos on request.", "theme": "auto" },
+      { "id": "05", "name": "AUTO", "epithet": "THE WILDCARD", "line": "Nobody knows the plan. Not even them.", "theme": "auto" }
+    ]
+  },
+  "drop": {
+    "eyebrow": "DROP 001",
+    "dropDate": "2026-12-01T18:00:00+03:00",
+    "liveMessage": "The drop is live.",
+    "note": "Concept project. No products are for sale.",
+    "formTitle": "Get first access.",
+    "formBody": "Join the waitlist and be first to know when the pairs drop.",
+    "placeholder": "you@email.com",
+    "button": "Notify me",
+    "success": "You're on the list ✦",
+    "microcopy": "Demo form. Nothing is sent or stored.",
+    "demoMode": true,
+    "labels": { "days": "DAYS", "hours": "HRS", "minutes": "MIN", "seconds": "SEC" }
+  },
+  "footer": {
+    "howTitle": "How it's built",
+    "how": [
+      "72-frame turntable scrubbed on a canvas",
+      "GSAP ScrollTrigger and Lenis smooth scroll",
+      "AI-generated imagery, hand-processed: cut-outs, alignment, compression",
+      "Vite and TypeScript, deployed on Vercel",
+      "Original characters. Concept project, not a real store."
+    ],
+    "links": [],
+    "credit": "Designed & built by Nitō",
+    "copyright": "Concept project"
+  }
+}

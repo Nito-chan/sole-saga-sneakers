@@ -1,0 +1,137 @@
+* { box-sizing: border-box; }
+
+html {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-body);
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  overflow-x: hidden;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+:focus-visible {
+  outline: 3px solid var(--lavender-deep);
+  outline-offset: 3px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font: inherit;
+}
+
+/* Type scale (§7.2) */
+.t-hero {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(44px, 6.6vw, 124px);
+  line-height: .9;
+  letter-spacing: -.03em;
+  text-transform: uppercase;
+}
+
+.t-h2 {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(36px, 5vw, 88px);
+  line-height: .95;
+  letter-spacing: -.02em;
+  text-transform: uppercase;
+}
+
+.t-color-name {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(40px, 5.2vw, 96px);
+  line-height: .92;
+  letter-spacing: -.02em;
+  text-transform: uppercase;
+}
+
+.t-anime-name {
+  font-family: var(--font-anime);
+  font-weight: 400;
+  font-size: clamp(44px, 5vw, 88px);
+  line-height: .95;
+  letter-spacing: .01em;
+  text-transform: uppercase;
+}
+
+.t-anime-giant {
+  font-family: var(--font-anime);
+  font-weight: 400;
+  font-size: min(24vw, 42vh);
+  font-size: min(24vw, 42svh);
+  line-height: .85;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.t-eyebrow {
+  font-weight: 600;
+  font-size: 13px;
+  line-height: 1.2;
+  letter-spacing: .28em;
+  text-transform: uppercase;
+}
+
+.t-body-l {
+  font-weight: 400;
+  font-size: 20px;
+  line-height: 1.5;
+}
+
+.t-body {
+  font-weight: 400;
+  font-size: 18px;
+  line-height: 1.5;
+}
+
+.t-small {
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 1.4;
+  letter-spacing: .02em;
+}
+
+.t-micro {
+  font-weight: 500;
+  font-size: 12px;
+  line-height: 1.4;
+  letter-spacing: .04em;
+}
+
+@media (max-width: 1023px) {
+  .t-body-l { font-size: 18px; }
+  .t-body { font-size: 16px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
+}

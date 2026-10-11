@@ -1,0 +1,12 @@
+# BUILD_LOG.md
+- 2026-10-10T13:00Z Phase 1: versions ok (node 24.15, npm 11.13, py 3.14.4 [spec wants 3.10-3.13, trying anyway per human], ffmpeg 9.0.2)
+- 2026-10-10T13:00Z Phase 1: source/ created (30 files copied flat); stop-check: all required stems FOUND, 6 colors, 5 anime pairs
+- 2026-10-10T13:00Z Phase 1: scaffold done (vite 8.3.4, tsc 7.0.2, gsap/lenis/fontsources, playwright+chromium 1248)
+- 2026-10-10T13:00Z Phase 1: .venv-assets ok (rembg 2.0.85 + onnxruntime 1.31, pillow, numpy importable); folders, .gitignore, vercel.json (Vercel per human instead of netlify.toml), AGENTS.md created; git init done
+- 2026-10-10T13:30Z Phase 2: pipeline done (isnet-general-use, model downloaded ~178MB). hero 72f desk 3.8MB mob 1.7MB flicker [72]; base 4; showcase 4 (4.1/5.4/6.8/4.7MB); colors 6; anime 5 pairs; fx ink 0.4MB. BUDGET FLAGS: laces-detail 6.8MB>6MB, total 30.7MB>30MB
+- 2026-10-10T13:35Z GATE A passed: budgets accepted as-is per human; contact sheets approved, no flip changes; continue to Phase 3
+- 2026-10-10T14:00Z Phase 2b (approved deviations): human supplied 5 pre-matted character PNGs; old character JPGs moved to source/_superseded; PNGs flattened to source/; alpha-bypass branch added to do_anime (skips clean_corner/cutout when source has alpha); --only anime re-ran ok, all outputs <=150KB, palettes re-derived, total still 30.7MB
+- 2026-10-10T14:10Z Phase 3+4 done: CSS system + site.json + data.ts (tsc clean). Phase 5 done: index.html (no Netlify form, Vercel), favicon, config, engine, preload, preloader, header, cursor (tsc clean)
+- 2026-10-10T14:40Z Phase 6 done (all 8 sections + main.ts). Fixes: anime timeline duration anchored to D; snap dormant under ?qa=1 (verified by code read); .a-stage/.a-title renamed .an-stage/.an-title (collision broke anatomy layout + anime font); --a-bg driven by JS interpolate (GSAP CSS-var tween clobbered it); anime mask spacing moved to masks + 120% hide; roster center scale via `scale` prop + bottom origin; roster CTA bottom 4svh->2svh (spec geometry collides 11px at 900px viewports); vh fallbacks added for all svh rules
+- 2026-10-10T15:00Z Phase 7 done: build clean, QA 8/8 PASS (desktop+mobile), screenshots reviewed, behavior probes pass (reduced-motion static, demo form success, swatch scroll, roster clearance). og-image.jpg generated (110KB)
+- 2026-10-10T13:40Z Phase 3: tokens.css/base.css/components.css/sections.css created per §7

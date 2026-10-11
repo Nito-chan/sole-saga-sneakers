@@ -1,0 +1,8 @@
+node_modules
+dist
+.venv-assets
+.work
+qa
+source
+sneaker project assets
+.DS_Store
