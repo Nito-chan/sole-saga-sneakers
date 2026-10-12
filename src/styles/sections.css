@@ -432,11 +432,8 @@ body.menu-open {
   transition: opacity .3s ease-out;
 }
 
-/* Hybrid hero hover layer: static box geometry, NO transform/will-change/
-   opacity-animation on the wrapper — any of those traps the video's
-   multiply blend inside this box (white rectangle). Fades happen on the
-   inner video element itself, whose own opacity does not trap blending. */
-.hero-hover {
+/* Speedlines rays behind the shoe — no blend mode, no stacking context trap. */
+.hero-rays {
   position: absolute;
   right: 1vw;
   top: calc(50% - 41vh);
@@ -444,34 +441,15 @@ body.menu-open {
   width: 58vw;
   height: 82vh;
   height: 82svh;
-  opacity: 1;
-  /* No z-index here: any stacking context on this wrapper traps the
-     video's multiply blend (white rectangle). DOM order (last in #hero)
-     already paints it above the background. */
+  opacity: .3;
+  pointer-events: none;
+  /* No z-index: DOM order (after .hero-bg, before .hero-stage) paints it behind the shoe. */
 }
 
-.hero-video {
+.hero-rays-img {
   width: 100%;
   height: 100%;
-  /* Cover: the 16:9 footage is mostly background at the sides; cover crops
-     that away and brings the shoe up to turntable presence. */
   object-fit: cover;
-  /* Hover clip sits on a near-white solid; multiply drops it into the
-     pastel gradient (same trick as anatomy videos). */
-  mix-blend-mode: multiply;
-  opacity: 0;
-  transition: opacity .3s ease-out;
-  pointer-events: none;
-}
-
-/* Hover at rest only once the video can play; otherwise the turntable
-   canvas (rotation idle) stays visible as the fallback. */
-#hero.has-video.is-hover .hero-video {
-  opacity: 1;
-}
-
-#hero.has-video.is-hover .hero-canvas {
-  opacity: 0;
 }
 
 .hero-fallback {
@@ -541,7 +519,7 @@ body.menu-open {
     transform: none;
   }
 
-  .hero-hover {
+  .hero-rays {
     left: 0;
     right: 0;
     top: auto;
