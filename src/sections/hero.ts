@@ -47,13 +47,6 @@ export function initHero(ctx: Ctx): void {
   bg.appendChild(halftone);
   bg.appendChild(el("div", "hero-bgword", hero.bgWord));
 
-  const rays = el("div", "hero-rays");
-  const raysImg = el("img", "hero-rays-img");
-  raysImg.setAttribute("src", site.assets.fx.speedlines.src);
-  raysImg.setAttribute("alt", "");
-  raysImg.setAttribute("aria-hidden", "true");
-  rays.appendChild(raysImg);
-
   const copy = el("div", "hero-copy");
   const eyebrow = el("p", "t-eyebrow hero-eyebrow", hero.eyebrow);
   const h1 = el("h1", "t-hero hero-h1");
@@ -77,6 +70,29 @@ export function initHero(ctx: Ctx): void {
 
   const stage = el("div", "hero-stage");
   const bob = el("div", "hero-bob");
+  // Hybrid hero: hover video at rest (WebM with alpha), turntable canvas on scroll.
+  // The video has alpha channel - shoe is opaque, background transparent.
+  // No multiply blend needed; video paints directly over the backdrop.
+  const hover = site.assets.hero.hover;
+  let video: HTMLVideoElement | null = null;
+  let videoReady = false;
+  let hoverWrap: HTMLElement | null = null;
+  if (hover) {
+    hoverWrap = el("div", "hero-hover");
+    video = el("video", "hero-video") as HTMLVideoElement;
+    video.muted = true;
+    video.loop = true;
+    (video as HTMLVideoElement).playsInline = true;
+    video.preload = "auto";
+    video.setAttribute("poster", hover.poster);
+    video.setAttribute("aria-hidden", "true");
+    const vsrc = el("source", "");
+    vsrc.setAttribute("src", hover.src);
+    vsrc.setAttribute("type", "video/webm");
+    video.appendChild(vsrc);
+    hoverWrap.appendChild(video);
+    section.appendChild(hoverWrap);
+  }
   const screen = el("div", "hero-screen");
   const canvas = el("canvas", "hero-canvas");
   canvas.textContent = "Rotating sneaker";
@@ -94,18 +110,53 @@ export function initHero(ctx: Ctx): void {
     stage.appendChild(c);
   }
 
-  section.append(bg, rays, copy, hint, stage);
+  section.append(bg, copy, hint, stage);
+  // Last in DOM = painted above the background (no z-index: see CSS note).
+  if (hoverWrap) section.appendChild(hoverWrap);
   app.appendChild(section);
 
   let player: FramePlayer | null = new FramePlayer(canvas);
-
+  // Hover/rotation mode + pin state drive both layers (hybrid hero).
+  let pinActive = true;
+  let hoverOn = true;
+  const applyMode = (): void => {
+    section.classList.toggle("is-hover", hoverOn && videoReady);
+    player?.setActive(pinActive && !(hoverOn && videoReady));
+    if (!video || !videoReady) return;
+    if (hoverOn && pinActive && !document.hidden) {
+      video.play().catch(() => undefined);
+    } else {
+      video.pause();
+    }
+  };
+  if (video) {
+    video.addEventListener(
+      "canplay",
+      () => {
+        videoReady = true;
+        section.classList.add("has-video");
+        applyMode();
+      },
+      { once: true },
+    );
+    video.addEventListener("error", () => {
+      videoReady = false;
+      section.classList.remove("has-video");
+      applyMode();
+    });
+  }
+  document.addEventListener("visibilitychange", applyMode);
   const onHeroUpdate = (progress: number): void => {
     player?.setProgress(progress);
+    hoverOn = progress <= CFG.hero.hoverFade;
+    applyMode();
   };
   const onHeroToggle = (active: boolean): void => {
-    player?.setActive(active);
+    pinActive = active;
+    applyMode();
   };
-
+  // Crossing the 1024px breakpoint keeps the wrong frame set (ISS-021):
+  // reload the correct set in the background and hot-swap it.
   let heroDesktop = window.innerWidth >= 1024;
   let heroTimer = 0;
   window.addEventListener("resize", () => {
@@ -123,9 +174,13 @@ export function initHero(ctx: Ctx): void {
     }, 400);
   });
 
+  // Intro (paused until the preloader exits).
   gsap.set("#hero .line", { yPercent: 110 });
   gsap.set(["#hero .hero-eyebrow", "#hero .hero-sub", "#hero .cta-row"], { y: 24, opacity: 0 });
   gsap.set("#hero .hero-stage", { scale: 1.12, opacity: 0 });
+  // No intro motion on .hero-hover at all: even an opacity fade (< 1) traps
+  // the video's multiply blend mid-fade. The inner video has its own .3s
+  // class fade; the wrapper simply exists from first paint.
   gsap.set("#hero .hero-bgword", { opacity: 0 });
   const intro = gsap.timeline({ paused: true });
   intro
@@ -151,6 +206,7 @@ export function initHero(ctx: Ctx): void {
         screen.replaceChildren(img);
         player?.destroy();
         player = null;
+        applyMode();
       } else {
         player?.setFrames(detail.frames);
       }
@@ -159,6 +215,8 @@ export function initHero(ctx: Ctx): void {
     { once: true },
   );
 
+  // Background frame arrivals (staged load or post-timeout recovery, ISS-003):
+  // swap fuller frame sets in, or upgrade the fallback image to the canvas.
   window.addEventListener("saga:frames", (e) => {
     const detail = (e as CustomEvent<FramesDetail>).detail;
     if (!detail.frames || detail.frames.length === 0) return;
@@ -173,6 +231,7 @@ export function initHero(ctx: Ctx): void {
     screen.replaceChildren(fresh);
     player = new FramePlayer(fresh);
     player.setFrames(detail.frames);
+    applyMode();
   });
 
   const buildDesktop = (): void => {
