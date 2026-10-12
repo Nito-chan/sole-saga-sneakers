@@ -12,7 +12,7 @@ export class FramePlayer {
   private angle = 0;
   private base = 0;
   private wasIdle = true;
-  private active = true;
+  private active = false;
   private lastKey = "";
 
   constructor(canvas: HTMLCanvasElement) {

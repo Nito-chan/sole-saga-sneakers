@@ -116,6 +116,15 @@ export function initHero(ctx: Ctx): void {
   app.appendChild(section);
 
   let player: FramePlayer | null = new FramePlayer(canvas);
+  // Establish initial mode: video at rest, canvas off.
+  // FramePlayer starts inactive; applyMode() will activate canvas only when scrolling.
+  if (video) {
+    // If video can play, it will trigger canplay -> applyMode() -> hover mode.
+    // If video fails, error handler will call applyMode() -> fallback to canvas.
+  } else {
+    // No hover asset: canvas active immediately (fallback behavior).
+    player.setActive(true);
+  }
   // Hover/rotation mode + pin state drive both layers (hybrid hero).
   let pinActive = true;
   let hoverOn = true;
@@ -146,6 +155,10 @@ export function initHero(ctx: Ctx): void {
     });
   }
   document.addEventListener("visibilitychange", applyMode);
+  // Initial mode: if video exists, wait for canplay/error; else activate canvas.
+  if (!video) {
+    applyMode();
+  }
   const onHeroUpdate = (progress: number): void => {
     player?.setProgress(progress);
     hoverOn = progress <= CFG.hero.hoverFade;
