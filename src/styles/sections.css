@@ -429,40 +429,6 @@ body.menu-open {
 .hero-canvas {
   width: 100%;
   height: 100%;
-  transition: opacity .3s ease-out;
-}
-
-/* Hybrid hero hover layer: static box geometry, NO transform/will-change.
-   The WebM has alpha channel (shoe opaque, background transparent).
-   No multiply blend needed — video paints directly over the backdrop. */
-.hero-hover {
-  position: absolute;
-  right: 1vw;
-  top: calc(50% - 41vh);
-  top: calc(50% - 41svh);
-  width: 58vw;
-  height: 82vh;
-  height: 82svh;
-  /* No z-index: DOM order (last in #hero) paints it above the background. */
-}
-
-.hero-video {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  opacity: 0;
-  transition: opacity .3s ease-out;
-  pointer-events: none;
-}
-
-/* Hover at rest only once the video can play; otherwise the turntable
-   canvas (rotation idle) stays visible as the fallback. */
-#hero.has-video.is-hover .hero-video {
-  opacity: 1;
-}
-
-#hero.has-video.is-hover .hero-canvas {
-  opacity: 0;
 }
 
 .hero-fallback {
@@ -530,16 +496,6 @@ body.menu-open {
     height: 52vh;
     height: 52svh;
     transform: none;
-  }
-
-  .hero-hover {
-    left: 0;
-    right: 0;
-    top: auto;
-    bottom: 0;
-    width: auto;
-    height: 52vh;
-    height: 52svh;
   }
 
   .hero-chip,

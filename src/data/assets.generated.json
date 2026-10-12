@@ -20,13 +20,7 @@
       68,
       69,
       72
-    ],
-    "hover": {
-      "src": "/assets/hero/hero-hover.webm",
-      "poster": "/assets/hero/hero-hover-poster.webp",
-      "w": 960,
-      "h": 540
-    }
+    ]
   },
   "base": {
     "front34": {

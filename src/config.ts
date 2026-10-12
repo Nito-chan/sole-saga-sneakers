@@ -1,7 +1,6 @@
 export const CFG = {
   bpDesktop: 1024,                       // px: >= desktop layout, < mobile layout
-  hero:    { pinSvh: 300, idleFps: 5, turns: 1, lerpK: 16, hoverFade: 0.03 },
-// idleFps 5 (~25deg/s, full turn ~14s): 12 read as a low-FPS flipbook (AUDIT 0a).
+  hero:    { pinSvh: 300, turns: 1, lerpK: 16 },
 // lerpK 16 (SPEC §9.2 says 10): snappier scrub follow, tuned with velocity hard-cut.
   marquee: { heightSvh: 16, minPx: 120, baseSpeedPxPerS: 60 },
   anatomy: { stepSvh: 80 },

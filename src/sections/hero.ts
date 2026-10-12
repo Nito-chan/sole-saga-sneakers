@@ -1,5 +1,4 @@
 import { el } from "../lib/dom";
-import { CFG } from "../config";
 import { loadHeroFrames } from "../lib/preload";
 import { FramePlayer } from "../lib/frameplayer";
 import type { FramesDetail, ReadyDetail } from "./preloader";
@@ -70,26 +69,6 @@ export function initHero(ctx: Ctx): void {
 
   const stage = el("div", "hero-stage");
   const bob = el("div", "hero-bob");
-  const hover = site.assets.hero.hover;
-  let video: HTMLVideoElement | null = null;
-  let hoverWrap: HTMLElement | null = null;
-  let videoState: "loading" | "ready" | "failed" | "none" = hover ? "loading" : "none";
-  if (hover) {
-    hoverWrap = el("div", "hero-hover");
-    video = el("video", "hero-video") as HTMLVideoElement;
-    video.muted = true;
-    video.loop = true;
-    (video as HTMLVideoElement).playsInline = true;
-    video.preload = "auto";
-    video.setAttribute("poster", hover.poster);
-    video.setAttribute("aria-hidden", "true");
-    const vsrc = el("source", "");
-    vsrc.setAttribute("src", hover.src);
-    vsrc.setAttribute("type", "image/webp");
-    video.appendChild(vsrc);
-    hoverWrap.appendChild(video);
-    section.appendChild(hoverWrap);
-  }
   const screen = el("div", "hero-screen");
   const canvas = el("canvas", "hero-canvas");
   canvas.textContent = "Rotating sneaker";
@@ -108,88 +87,41 @@ export function initHero(ctx: Ctx): void {
   }
 
   section.append(bg, copy, hint, stage);
-  if (hoverWrap) section.appendChild(hoverWrap);
   app.appendChild(section);
 
-  let player: FramePlayer | null = new FramePlayer(canvas);
-
-  let pinActive = true;
-  let hoverOn = true;
-  const applyMode = (): void => {
-    const isHover = hoverOn && pinActive;
-    const isScrolling = !hoverOn && pinActive;
-
-    if (isScrolling) {
-      player?.setActive(true);
-      section.classList.remove("is-hover");
-      video?.pause();
-    } else if (isHover) {
-      if (videoState === "ready") {
-        section.classList.add("is-hover");
-        player?.setActive(false);
-        video?.play().catch(() => undefined);
-      } else if (videoState === "failed" || videoState === "none") {
-        section.classList.remove("is-hover");
-        player?.setActive(true);
-        video?.pause();
-      } else {
-        section.classList.remove("is-hover");
-        player?.setActive(false);
-        video?.pause();
-      }
-    } else {
-      player?.setActive(false);
-      video?.pause();
-    }
-  };
-
-  if (video) {
-    video.addEventListener(
-      "canplay",
-      () => {
-        videoState = "ready";
-        section.classList.add("has-video");
-        applyMode();
-      },
-      { once: true },
-    );
-    video.addEventListener("error", () => {
-      videoState = "failed";
-      section.classList.remove("has-video");
-      applyMode();
-    });
-  }
-  document.addEventListener("visibilitychange", applyMode);
-  // Initial mode
-  applyMode();
+  // Pure turntable: canvas holds its frame at rest (CSS .hero-bob floats it),
+  // scrubs on scroll, holds wherever scroll stops.
+  const player: FramePlayer | null = new FramePlayer(canvas);
+  let livePlayer: FramePlayer | null = player;
+  livePlayer.setActive(true);
 
   const onHeroUpdate = (progress: number): void => {
-    player?.setProgress(progress);
-    hoverOn = progress <= CFG.hero.hoverFade;
-    applyMode();
+    livePlayer?.setProgress(progress);
   };
   const onHeroToggle = (active: boolean): void => {
-    pinActive = active;
-    applyMode();
+    livePlayer?.setActive(active);
   };
 
+  // Crossing the 1024px breakpoint keeps the wrong frame set (ISS-021):
+  // reload the correct set in the background and hot-swap it.
   let heroDesktop = window.innerWidth >= 1024;
   let heroTimer = 0;
   window.addEventListener("resize", () => {
-    player?.resize();
+    livePlayer?.resize();
     window.clearTimeout(heroTimer);
     heroTimer = window.setTimeout(() => {
       const wantDesktop = window.innerWidth >= 1024;
       if (wantDesktop === heroDesktop) return;
       heroDesktop = wantDesktop;
       const set = wantDesktop ? site.assets.hero.desktop : site.assets.hero.mobile;
-      if (!player) return;
+      if (!livePlayer) return;
       void loadHeroFrames(set.dir, site.assets.hero.count, () => undefined).then((r) => {
-        if (r.loaded > 0) player?.setFrames(r.frames);
+        if (r.loaded > 0) livePlayer?.setFrames(r.frames);
       });
     }, 400);
   });
 
+  // Intro (paused until the preloader exits).
   gsap.set("#hero .line", { yPercent: 110 });
   gsap.set(["#hero .hero-eyebrow", "#hero .hero-sub", "#hero .cta-row"], { y: 24, opacity: 0 });
   gsap.set("#hero .hero-stage", { scale: 1.12, opacity: 0 });
@@ -216,22 +148,23 @@ export function initHero(ctx: Ctx): void {
         img.setAttribute("width", String(site.assets.base.front34.w));
         img.setAttribute("height", String(site.assets.base.front34.h));
         screen.replaceChildren(img);
-        player?.destroy();
-        player = null;
-        applyMode();
+        livePlayer?.destroy();
+        livePlayer = null;
       } else {
-        player?.setFrames(detail.frames);
+        livePlayer?.setFrames(detail.frames);
       }
       intro.play();
     },
     { once: true },
   );
 
+  // Background frame arrivals (staged load or post-timeout recovery, ISS-003):
+  // swap fuller frame sets in, or upgrade the fallback image to the canvas.
   window.addEventListener("saga:frames", (e) => {
     const detail = (e as CustomEvent<FramesDetail>).detail;
     if (!detail.frames || detail.frames.length === 0) return;
-    if (player) {
-      player.setFrames(detail.frames);
+    if (livePlayer) {
+      livePlayer.setFrames(detail.frames);
       return;
     }
     const fresh = el("canvas", "hero-canvas");
@@ -239,9 +172,9 @@ export function initHero(ctx: Ctx): void {
     fresh.setAttribute("aria-label", "Rotating sneaker");
     fresh.setAttribute("role", "img");
     screen.replaceChildren(fresh);
-    player = new FramePlayer(fresh);
-    player.setFrames(detail.frames);
-    applyMode();
+    livePlayer = new FramePlayer(fresh);
+    livePlayer.setFrames(detail.frames);
+    livePlayer.setActive(true);
   });
 
   const buildDesktop = (): void => {

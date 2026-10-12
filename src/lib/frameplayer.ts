@@ -2,16 +2,15 @@ import gsap from "gsap";
 import { CFG } from "../config";
 import type { Frame } from "./preload";
 
-// Scroll-scrubbed turntable: idle rotation at rest, exactly one full turn
-// across hero scroll progress, with cross-dissolve between frames.
+// Scroll-scrubbed turntable: holds its frame at rest (CSS .hero-bob does
+// the hovering float), scrubs exactly one full turn across hero scroll
+// progress, with cross-dissolve between frames.
 export class FramePlayer {
   private canvas: HTMLCanvasElement;
   private g: CanvasRenderingContext2D | null;
   private frames: Frame[] = [];
   private progress = 0;
   private angle = 0;
-  private base = 0;
-  private wasIdle = true;
   private active = false;
   private lastKey = "";
 
@@ -59,19 +58,12 @@ export class FramePlayer {
     const n = this.frames.length;
     if (!this.active || n === 0 || !this.g) return;
     const dt = Math.min(deltaMs / 1000, 0.1);
-    let gap = 0;
-    if (window.scrollY <= 2) {
-      this.angle += CFG.hero.idleFps * dt;
-      this.wasIdle = true;
-    } else {
-      if (this.wasIdle) {
-        this.base = this.angle;
-        this.wasIdle = false;
-      }
-      const target = this.base + this.progress * n * CFG.hero.turns;
-      gap = Math.abs(target - this.angle);
-      this.angle += (target - this.angle) * (1 - Math.exp(-CFG.hero.lerpK * dt));
-    }
+    // Deterministic scrub: angle converges to progress * frames.
+    // When scroll stops, progress freezes, the lerp settles, the draw key
+    // stops changing and the ticker early-returns — the frame holds.
+    const target = this.progress * n * CFG.hero.turns;
+    const gap = Math.abs(target - this.angle);
+    this.angle += (target - this.angle) * (1 - Math.exp(-CFG.hero.lerpK * dt));
     const fl = Math.floor(this.angle);
     const i = ((fl % n) + n) % n;
     const frac = this.angle - fl;
