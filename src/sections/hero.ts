@@ -88,7 +88,7 @@ export function initHero(ctx: Ctx): void {
     video.setAttribute("aria-hidden", "true");
     const vsrc = el("source", "");
     vsrc.setAttribute("src", hover.src);
-    vsrc.setAttribute("type", "video/webm");
+    vsrc.setAttribute("type", "image/webp");
     video.appendChild(vsrc);
     hoverWrap.appendChild(video);
     section.appendChild(hoverWrap);
