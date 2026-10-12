@@ -46,6 +46,8 @@
   text-decoration: underline;
   text-underline-offset: 6px;
   white-space: nowrap;
+  /* 24px+ target (ISS-018). */
+  padding: 4px 0;
 }
 
 .link-arrow .arr {
@@ -84,4 +86,12 @@
   height: 40px;
   padding: 0 20px;
   font-size: 14px;
+}
+
+/* Single cursor (ISS-020): the custom dot+ring replaces the native pointer
+   on fine-pointer devices instead of doubling it. */
+@media (hover: hover) and (pointer: fine) {
+  body, a, button, input {
+    cursor: none;
+  }
 }

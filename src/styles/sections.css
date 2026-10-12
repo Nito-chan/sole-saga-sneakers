@@ -34,6 +34,12 @@ section {
   border-bottom: 1px solid var(--line-dark);
 }
 
+/* Theme-aware CTA (ISS-012): the ink pill vanishes on dark headers. */
+.site-header[data-theme="dark"] .header-cta {
+  background: var(--paper);
+  color: var(--ink);
+}
+
 .site-header .wordmark {
   font-family: var(--font-display);
   font-weight: 800;
@@ -54,11 +60,104 @@ section {
   font-size: 14px;
   text-transform: uppercase;
   letter-spacing: .12em;
+  /* 24px+ targets (ISS-018). */
+  padding: 6px 4px;
+}
+
+/* Mobile menu (ISS-010): only rendered as a button <= 1023px. */
+.menu-btn {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  width: 44px;
+  height: 44px;
+  margin-left: auto;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  /* Above the .mobile-menu sheet (same stacking context, later sibling). */
+  position: relative;
+  z-index: 1;
+}
+
+.site-header .wordmark {
+  position: relative;
+  z-index: 1;
+}
+
+.menu-bar {
+  display: block;
+  width: 22px;
+  height: 2px;
+  background: currentColor;
+  transition: transform .3s var(--ease-out);
+}
+
+body.menu-open .menu-btn .menu-bar:first-child {
+  transform: translateY(4px) rotate(45deg);
+}
+
+body.menu-open .menu-btn .menu-bar:last-child {
+  transform: translateY(-4px) rotate(-45deg);
+}
+
+.mobile-menu {
+  position: fixed;
+  inset: 0;
+  /* No local z-index: the header's own stacking context already floats above
+     page content, and any value here would also cover the menu button and
+     wordmark siblings. Those carry z-index 1 instead. */
+  background: var(--paper);
+  color: var(--ink);
+  padding: calc(var(--header-h) + 6vh) 6vw 8vh;
+  padding: calc(var(--header-h) + 6svh) 6vw 8svh;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  transform: translateY(-102%);
+  visibility: hidden;
+  transition: transform .45s var(--ease-out), visibility 0s .45s;
+}
+
+body.menu-open .mobile-menu {
+  transform: none;
+  visibility: visible;
+  transition: transform .45s var(--ease-out);
+}
+
+body.menu-open {
+  overflow: hidden;
+}
+
+.mobile-menu-links {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.mobile-menu-link {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(40px, 12vw, 64px);
+  line-height: 1.05;
+  letter-spacing: -.02em;
+  text-transform: uppercase;
+  padding: 6px 0;
+}
+
+.mobile-menu-cta {
+  align-self: flex-start;
+}
+
+@media (max-width: 1023px) {
+  .menu-btn { display: inline-flex; }
+  .site-header .header-cta { display: none; }
 }
 
 @media (max-width: 1023px) {
   .site-header .nav-links { display: none; }
-  .site-header .header-cta { margin-left: auto; }
 }
 
 .preloader {
@@ -252,7 +351,9 @@ section {
 }
 
 .hero-h1 .line--grad {
-  background: var(--grad-brand);
+  /* Text-grade gradient (ISS-009): brand gradient is too light for large
+     type on paper (~2:1); these stops hold >= 3:1. */
+  background: linear-gradient(90deg, #7B5CE0, #E0609A);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -320,9 +421,57 @@ section {
   50% { transform: translateY(14px); }
 }
 
+.hero-screen {
+  position: absolute;
+  inset: 0;
+}
+
 .hero-canvas {
   width: 100%;
   height: 100%;
+  transition: opacity .3s ease-out;
+}
+
+/* Hybrid hero hover layer: static box geometry, NO transform/will-change/
+   opacity-animation on the wrapper — any of those traps the video's
+   multiply blend inside this box (white rectangle). Fades happen on the
+   inner video element itself, whose own opacity does not trap blending. */
+.hero-hover {
+  position: absolute;
+  right: 1vw;
+  top: calc(50% - 41vh);
+  top: calc(50% - 41svh);
+  width: 58vw;
+  height: 82vh;
+  height: 82svh;
+  opacity: 1;
+  /* No z-index here: any stacking context on this wrapper traps the
+     video's multiply blend (white rectangle). DOM order (last in #hero)
+     already paints it above the background. */
+}
+
+.hero-video {
+  width: 100%;
+  height: 100%;
+  /* Cover: the 16:9 footage is mostly background at the sides; cover crops
+     that away and brings the shoe up to turntable presence. */
+  object-fit: cover;
+  /* Hover clip sits on a near-white solid; multiply drops it into the
+     pastel gradient (same trick as anatomy videos). */
+  mix-blend-mode: multiply;
+  opacity: 0;
+  transition: opacity .3s ease-out;
+  pointer-events: none;
+}
+
+/* Hover at rest only once the video can play; otherwise the turntable
+   canvas (rotation idle) stays visible as the fallback. */
+#hero.has-video.is-hover .hero-video {
+  opacity: 1;
+}
+
+#hero.has-video.is-hover .hero-canvas {
+  opacity: 0;
 }
 
 .hero-fallback {
@@ -390,6 +539,16 @@ section {
     height: 52vh;
     height: 52svh;
     transform: none;
+  }
+
+  .hero-hover {
+    left: 0;
+    right: 0;
+    top: auto;
+    bottom: 0;
+    width: auto;
+    height: 52vh;
+    height: 52svh;
   }
 
   .hero-chip,
@@ -816,8 +975,10 @@ section {
   top: 52vh;
   top: 52svh;
   translate: -50% -50%;
-  width: min(52vw, 118vh);
-  width: min(52vw, 118svh);
+  /* Narrowed (ISS-006): 52vw bled into the 62vw content column and spec
+     text rendered over the shoe photo. */
+  width: min(44vw, 100vh);
+  width: min(44vw, 100svh);
   aspect-ratio: 2000 / 1200;
   object-fit: contain;
   will-change: transform;
@@ -826,11 +987,11 @@ section {
 .c-shadow {
   position: absolute;
   left: 30vw;
-  top: calc(52vh + min(52vw, 118vh) * 0.3 + 4vh);
-  top: calc(52svh + min(52vw, 118svh) * 0.3 + 4svh);
+  top: calc(52vh + min(44vw, 100vh) * 0.3 + 4vh);
+  top: calc(52svh + min(44vw, 100svh) * 0.3 + 4svh);
   translate: -50% 0;
-  width: calc(min(52vw, 118vh) * 0.6);
-  width: calc(min(52vw, 118svh) * 0.6);
+  width: calc(min(44vw, 100vh) * 0.6);
+  width: calc(min(44vw, 100svh) * 0.6);
   height: 4vh;
   height: 4svh;
   background: radial-gradient(closest-side, rgba(0, 0, 0, .18), transparent);
@@ -970,26 +1131,26 @@ section {
     left: 0;
     width: auto;
     right: 0;
-    top: calc(var(--header-h) + 2vh);
-    top: calc(var(--header-h) + 2svh);
-    height: 40vh;
-    height: 40svh;
+    top: calc(var(--header-h) + 1vh);
+    top: calc(var(--header-h) + 1svh);
+    height: 36vh;
+    height: 36svh;
   }
 
   .c-shoe {
     left: 50vw;
-    top: 20vh;
-    top: 20svh;
-    width: min(96vw, 66vh);
-    width: min(96vw, 66svh);
+    top: 18vh;
+    top: 18svh;
+    width: min(88vw, 58vh);
+    width: min(88vw, 58svh);
   }
 
   .c-shadow {
     left: 50vw;
-    top: calc(20vh + min(96vw, 66vh) * 0.3 + 3vh);
-    top: calc(20svh + min(96vw, 66svh) * 0.3 + 3svh);
-    width: calc(min(96vw, 66vh) * 0.6);
-    width: calc(min(96vw, 66svh) * 0.6);
+    top: calc(18vh + min(88vw, 58vh) * 0.3 + 2vh);
+    top: calc(18svh + min(88vw, 58svh) * 0.3 + 2svh);
+    width: calc(min(88vw, 58vh) * 0.6);
+    width: calc(min(88vw, 58svh) * 0.6);
   }
 
   .c-giant {
@@ -1004,25 +1165,40 @@ section {
     left: 6vw;
     right: 6vw;
     width: auto;
-    top: 50vh;
-    top: 50svh;
+    top: 47vh;
+    top: 47svh;
     transform: none;
   }
 
+  .c-counter {
+    margin: 12px 0;
+  }
+
   .c-name {
-    font-size: clamp(36px, 11vw, 56px);
+    font-size: clamp(32px, 10vw, 48px);
+    margin: 0 0 12px;
   }
 
   .c-tagline {
-    font-size: 18px;
+    font-size: 17px;
+    margin: 0 0 16px;
+  }
+
+  .c-specs {
+    gap: 8px;
   }
 
   .c-specs li {
-    font-size: 16px;
+    font-size: 15px;
+  }
+
+  .c-swatches {
+    margin-top: 20px;
   }
 
   .c-cta {
     width: 100%;
+    margin-top: 20px;
   }
 
   .c-rail {
@@ -1094,14 +1270,20 @@ section {
   will-change: transform;
 }
 
-.a-char {
+.a-port {
   position: absolute;
-  right: 3vw;
-  bottom: -3vh;
-  bottom: -3svh;
-  height: 94vh;
-  height: 94svh;
-  z-index: var(--z-character);
+  left: 44vw;
+  bottom: 9vh;
+  bottom: 9svh;
+  width: min(26vw, 36vh);
+  width: min(26vw, 36svh);
+  height: 48vh;
+  height: 48svh;
+  z-index: var(--z-sneaker);
+  border: 2px solid #fff;
+  border-radius: var(--r-md);
+  background: rgba(0, 0, 0, .35);
+  padding: 10px;
   animation: a-bob-c 4.4s ease-in-out infinite;
   filter: drop-shadow(2px 0 0 #fff) drop-shadow(-2px 0 0 #fff) drop-shadow(0 2px 0 #fff) drop-shadow(0 -2px 0 #fff) drop-shadow(8px 8px 0 rgba(0, 0, 0, .35));
 }
@@ -1111,17 +1293,18 @@ section {
   50% { transform: translateY(6px); }
 }
 
-.a-char-img {
+.a-port-img {
+  width: 100%;
   height: 100%;
-  width: auto;
+  object-fit: contain;
   will-change: transform;
 }
 
 .a-sneaker {
   position: absolute;
-  left: 29vw;
-  top: 38vh;
-  top: 38svh;
+  left: 28vw;
+  top: 40vh;
+  top: 40svh;
   translate: -50% -50%;
   rotate: -12deg;
   z-index: var(--z-sneaker);
@@ -1135,8 +1318,8 @@ section {
 }
 
 .a-sneaker-img {
-  width: min(46vw, 80vh);
-  width: min(46vw, 80svh);
+  width: min(50vw, 86vh);
+  width: min(50vw, 86svh);
   height: auto;
   will-change: transform;
 }
@@ -1148,10 +1331,10 @@ section {
 
 .a-info {
   position: absolute;
-  left: 6vw;
+  left: 70vw;
   bottom: 9vh;
   bottom: 9svh;
-  width: 36vw;
+  width: 24vw;
   z-index: var(--z-info);
 }
 
@@ -1204,17 +1387,35 @@ section {
   writing-mode: vertical-rl;
   transform: rotate(180deg);
   color: #fff;
-  opacity: .8;
+  /* Backing chip (ISS-009): rail sits on saturated primary layers where
+     bare white text fails contrast. */
+  background: rgba(0, 0, 0, .45);
+  padding: 10px 6px;
+  border-radius: 999px;
 }
 
-.a-tick {
-  width: 2px;
-  height: 14px;
-  background: rgba(255, 255, 255, .4);
+.a-mini {
+  width: 48px;
+  height: 60px;
+  border-radius: 10px;
+  border: 2px solid transparent;
+  background: rgba(0, 0, 0, .35);
+  padding: 3px;
+  cursor: pointer;
+  transition: transform .25s var(--ease-out);
 }
 
-.a-tick.is-active {
-  height: 36px;
+.a-mini.is-active {
+  transform: scale(1.12);
+}
+
+.a-mini-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 20%;
+  border-radius: 6px;
+  display: block;
 }
 
 .a-speed {
@@ -1289,25 +1490,50 @@ section {
   display: flex;
   flex-direction: column;
   align-items: center;
+  position: relative;
 }
 
-.a-roster-col.is-center {
-  scale: 1.08;
-  transform-origin: 50% 100%;
-  z-index: 1;
-}
+.pos-0, .pos-4 { translate: 0 3vh; translate: 0 3svh; }
+.pos-1, .pos-3 { translate: 0 1.5vh; translate: 0 1.5svh; }
+.pos-2 { translate: 0 -1vh; translate: 0 -1svh; scale: 1.08; transform-origin: 50% 100%; z-index: 1; }
 
-.a-roster-char {
-  height: 56vh;
-  height: 56svh;
-  width: auto;
+.a-roster-glow {
+  position: absolute;
+  left: 5%;
+  right: 5%;
+  top: 0;
+  height: 140px;
+  filter: blur(12px);
+  opacity: .55;
+  z-index: 0;
 }
 
 .a-roster-sneak {
-  width: 17vw;
+  width: 19vw;
   height: auto;
-  margin-top: -8vh;
-  margin-top: -8svh;
+  position: relative;
+  z-index: 1;
+}
+
+.a-roster-medal {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  border: 3px solid #fff;
+  overflow: hidden;
+  margin-top: -5vh;
+  margin-top: -5svh;
+  position: relative;
+  z-index: 2;
+  background: rgba(0, 0, 0, .35);
+}
+
+.a-roster-medimg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 20%;
+  display: block;
 }
 
 .a-roster-name {
@@ -1363,19 +1589,22 @@ section {
     display: none;
   }
 
-  .a-char {
-    right: -6vw;
+  .a-port {
+    left: 50vw;
     top: calc(var(--header-h) + 1vh);
     top: calc(var(--header-h) + 1svh);
     bottom: auto;
-    height: 50vh;
-    height: 50svh;
+    translate: -50% 0;
+    height: 34vh;
+    height: 34svh;
+    width: min(60vw, 44vh);
+    width: min(60vw, 44svh);
   }
 
   .a-sneaker {
     left: 50vw;
-    top: 64vh;
-    top: 64svh;
+    top: 60vh;
+    top: 60svh;
     rotate: -8deg;
   }
 
@@ -1425,8 +1654,10 @@ section {
     top: 22svh;
   }
 
-  .a-roster-char {
-    display: none;
+  .a-roster-medal {
+    width: 72px;
+    height: 72px;
+    margin-top: -24px;
   }
 
   .a-roster-sneak {
@@ -1434,8 +1665,9 @@ section {
     margin-top: 0;
   }
 
-  .a-roster-col.is-center {
-    transform: none;
+  .pos-0, .pos-1, .pos-2, .pos-3, .pos-4 {
+    translate: none;
+    scale: none;
   }
 
   .a-roster-cta {
@@ -1498,6 +1730,15 @@ section {
   line-height: 1;
   font-variant-numeric: tabular-nums;
   will-change: transform;
+}
+
+.drop-num.tick {
+  animation: digit-in .35s var(--ease-out);
+}
+
+@keyframes digit-in {
+  from { transform: translateY(40%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
 }
 
 .drop-live {
@@ -1571,7 +1812,7 @@ section {
 }
 
 .drop-email::placeholder {
-  color: rgba(255, 255, 255, .5);
+  color: rgba(255, 255, 255, .75);
 }
 
 .drop-submit {
@@ -1670,8 +1911,9 @@ section {
 }
 
 .f-list li {
-  display: flex;
-  align-items: center;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: start;
   gap: 12px;
   font-size: 18px;
 }

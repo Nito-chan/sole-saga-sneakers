@@ -59,6 +59,7 @@ export class FramePlayer {
     const n = this.frames.length;
     if (!this.active || n === 0 || !this.g) return;
     const dt = Math.min(deltaMs / 1000, 0.1);
+    let gap = 0;
     if (window.scrollY <= 2) {
       this.angle += CFG.hero.idleFps * dt;
       this.wasIdle = true;
@@ -68,18 +69,23 @@ export class FramePlayer {
         this.wasIdle = false;
       }
       const target = this.base + this.progress * n * CFG.hero.turns;
+      gap = Math.abs(target - this.angle);
       this.angle += (target - this.angle) * (1 - Math.exp(-CFG.hero.lerpK * dt));
     }
     const fl = Math.floor(this.angle);
     const i = ((fl % n) + n) % n;
     const frac = this.angle - fl;
-    const key = `${i}:${Math.round(frac * 32)}`;
+    // Dissolve quantized to 8 steps: same visible smoothness, ~4x fewer redraws.
+    const key = `${i}:${Math.round(frac * 8)}`;
     if (key === this.lastKey) return;
     this.lastKey = key;
-    this.draw(i, frac);
+    // Fast scrolls span several frames per tick: hard-cut instead of
+    // dissolving, which would smear into a double image.
+    // Slow motion uses a 3-frame weighted blend to hide the 5-degree steps.
+    this.draw(i, gap > 2 ? 0 : frac, gap > 2);
   };
 
-  private draw(i: number, frac: number): void {
+  private draw(i: number, frac: number, hardCut: boolean): void {
     const g = this.g;
     const n = this.frames.length;
     if (!g || n === 0) return;
@@ -96,9 +102,18 @@ export class FramePlayer {
     const h = ah * s;
     const x = (cw - w) / 2;
     const y = (ch - h) / 2;
+    // Leading ghost of the previous frame softens the 5-degree steps
+    // (frames are opaque cutouts, so extra blends only touch edge pixels).
+    if (!hardCut && frac < 0.98) {
+      const p = this.frames[(i - 1 + n) % n];
+      if (p.width > 0 && p.height > 0) {
+        g.globalAlpha = (1 - frac) * 0.35;
+        g.drawImage(p, x, y, w, h);
+      }
+    }
     g.globalAlpha = 1;
     g.drawImage(a, x, y, w, h);
-    if (frac > 0.02) {
+    if (!hardCut && frac > 0.02) {
       const b = this.frames[(i + 1) % n];
       if (b.width > 0 && b.height > 0) {
         g.globalAlpha = frac;

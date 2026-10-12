@@ -376,7 +376,7 @@ def do_anime(args, man):
     missing = [i for i in ids if i not in sn or i not in ch]
     if missing:
         die(f"Anime pair incomplete for id(s) {missing}: each id needs BOTH a -sneaker and a -character file.")
-    out, s_sheet, c_sheet = [], [], []
+    out, s_sheet, c_sheet, f_sheet = [], [], [], []
     for i in ids:
         slug = ch[i][0]
         im_s = cutout(clean_corner(Image.open(sn[i][1])), args.cutout)
@@ -397,14 +397,24 @@ def do_anime(args, man):
         d_c = OUT / "anime" / f"anime-{i}-{slug}-character.webp"
         save_webp(s_canvas, d_s, 86)
         save_webp(c_canvas, d_c, 86)
+        # Face thumbnail for roster medallions + rail minis: top-centered square
+        # of the character canvas (heads live at the top; full-canvas cover
+        # crops kept torsos and cut faces — AUDIT follow-up).
+        face_box = (200, 0, 1000, 800)
+        face = c_canvas.crop(face_box).resize((512, 512), Image.LANCZOS)
+        d_f = OUT / "anime" / f"anime-{i}-{slug}-face.webp"
+        save_webp(face, d_f, 82)
         pal = extract_palette(c_canvas) or extract_palette(s_canvas)
         out.append({"id": i, "slug": slug, "sneaker": web(d_s), "character": web(d_c),
+                    "face": web(d_f),
                     "sneakerSize": [1600, 1000], "characterSize": [1200, 1600], "palette": pal})
         s_sheet.append(s_canvas)
         c_sheet.append(c_canvas)
-        log(f"[anime] {i} {slug}: sneaker {kb(d_s):.0f} KB, character {kb(d_c):.0f} KB, palette {pal}")
+        f_sheet.append(face)
+        log(f"[anime] {i} {slug}: sneaker {kb(d_s):.0f} KB, character {kb(d_c):.0f} KB, face {kb(d_f):.0f} KB, palette {pal}")
     contact_sheet(s_sheet, QA / "anime-sneakers-contact.png", cell=420, cols=3)
     contact_sheet(c_sheet, QA / "anime-characters-contact.png", cell=420, cols=3)
+    contact_sheet(f_sheet, QA / "anime-faces-contact.png", cell=420, cols=3)
     man["anime"] = out
 
 

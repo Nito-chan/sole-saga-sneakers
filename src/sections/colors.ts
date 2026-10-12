@@ -4,11 +4,17 @@ import type { Ctx } from "../lib/engine";
 import type { ColorItem } from "../lib/data";
 
 function luminance(hex: string): number {
+  // Linearized relative luminance (sRGB): the raw weighted sum overestimates
+  // saturated reds/oranges and can pick the wrong header theme (ISS-039).
   const m = hex.replace("#", "");
   const full = m.length === 3 ? m.split("").map((c) => c + c).join("") : m;
-  const r = parseInt(full.slice(0, 2), 16) / 255;
-  const g = parseInt(full.slice(2, 4), 16) / 255;
-  const b = parseInt(full.slice(4, 6), 16) / 255;
+  const lin = (h: string): number => {
+    const c = parseInt(h, 16) / 255;
+    return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+  };
+  const r = lin(full.slice(0, 2));
+  const g = lin(full.slice(2, 4));
+  const b = lin(full.slice(4, 6));
   return 0.2126 * r + 0.7152 * g + 0.0722 * b;
 }
 
@@ -99,6 +105,7 @@ export function initColors(ctx: Ctx): void {
     img.setAttribute("src", item.src);
     img.setAttribute("alt", `Colorway ${item.name}`);
     img.setAttribute("decoding", "async");
+    img.setAttribute("loading", "lazy");
     if (i > 0) img.style.opacity = "0";
     bob.appendChild(img);
     shoes.push(img);
@@ -171,8 +178,12 @@ export function initColors(ctx: Ctx): void {
           if (targetIdx !== shownIdx) {
             shownIdx = targetIdx;
             counter.textContent = `${String(targetIdx + 1).padStart(2, "0")} / ${String(n).padStart(2, "0")}`;
-            const theme = luminance(items[targetIdx].bg) > 0.5 ? "light" : "dark";
+            const theme = luminance(items[targetIdx].bg) > 0.35 ? "light" : "dark";
             section.dataset.header = theme;
+            // Drive BOTH theme vars directly (ISS-001/002): GSAP CSS-var tweens
+            // left --c-text transparent and --c-bg stale after step 1.
+            section.style.setProperty("--c-bg", items[targetIdx].bg);
+            section.style.setProperty("--c-text", items[targetIdx].text);
             swatchBtns.forEach((b, i) => {
               b.classList.toggle("is-active", i === targetIdx);
               b.setAttribute("aria-pressed", i === targetIdx ? "true" : "false");
@@ -196,7 +207,7 @@ export function initColors(ctx: Ctx): void {
         { clipPath: `circle(140% at ${wipeOrigin})`, duration: win, ease: "power2.inOut" },
         at,
       );
-      tl.to(section, { "--c-text": items[k + 1].text, duration: win / 2 }, at + win / 4);
+      // Theme vars are driven by onUpdate (see above), never tweened.
       tl.to(
         shoes[k],
         { x: "-4vw", rotate: -5, opacity: 0, scale: 0.96, duration: win * 0.45 },

@@ -23,6 +23,7 @@ export function initDrop(ctx: Ctx): void {
     bg.setAttribute("alt", "");
     bg.setAttribute("aria-hidden", "true");
     bg.setAttribute("decoding", "async");
+    bg.setAttribute("loading", "lazy");
     section.appendChild(bg);
     section.appendChild(el("div", "drop-veil"));
   }
@@ -88,13 +89,10 @@ export function initDrop(ctx: Ctx): void {
     const node = digits[key];
     if (node.textContent === value) return;
     node.textContent = value;
-    if (!ctx.prefersReduced) {
-      gsap.fromTo(
-        node,
-        { y: "40%", opacity: 0 },
-        { y: "0%", opacity: 1, duration: 0.35, ease: "power3.out" },
-      );
-    }
+    // CSS pulse instead of a per-second GSAP tween (ISS-028).
+    node.classList.remove("tick");
+    void node.offsetWidth;
+    node.classList.add("tick");
   };
   const tick = (): void => {
     const leftMs = target - Date.now();
@@ -123,6 +121,8 @@ export function initDrop(ctx: Ctx): void {
       return;
     }
     err.textContent = "";
+    // Demo waitlist (ISS-030): decorative until a real endpoint is wired.
+    // Do NOT re-add a fetch here without a backend + QA coverage.
     const done = (): void => {
       const ok = el("div", "drop-success", drop.success);
       form.replaceWith(ok);
@@ -130,27 +130,7 @@ export function initDrop(ctx: Ctx): void {
         gsap.fromTo(ok, { opacity: 0, scale: 0.96 }, { opacity: 1, scale: 1, duration: 0.4 });
       }
     };
-    if (drop.demoMode) {
-      done();
-      return;
-    }
-    fetch("/", {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams({
-        "form-name": "waitlist",
-        email: value,
-        colorway: hiddenColor.value,
-        character: hiddenChar.value,
-      }).toString(),
-    })
-      .then((res) => {
-        if (res.ok) done();
-        else err.textContent = "Something went wrong. Try again.";
-      })
-      .catch(() => {
-        err.textContent = "Something went wrong. Try again.";
-      });
+    done();
   });
 
   if (!ctx.prefersReduced) {

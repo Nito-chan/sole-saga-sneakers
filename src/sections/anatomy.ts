@@ -119,6 +119,18 @@ export function initAnatomy(ctx: Ctx): void {
   const titles = qsa<HTMLElement>(titleStack, ".a-title");
   const bodies = qsa<HTMLElement>(bodyStack, ".a-body");
 
+  // Only the active beat is exposed to assistive tech (ISS-017):
+  // opacity-only hiding keeps all four beats in the a11y tree.
+  const groups0 = qsa<SVGGElement>(svg, ".a-callout-g");
+  const chips0 = qsa<HTMLElement>(chipLayer, ".a-chip");
+  const exposeBeat = (idx: number): void => {
+    titles.forEach((t, j) => t.setAttribute("aria-hidden", String(j !== idx)));
+    bodies.forEach((b, j) => b.setAttribute("aria-hidden", String(j !== idx)));
+    groups0.forEach((g, j) => g.setAttribute("aria-hidden", String(j !== idx)));
+    chips0.forEach((c) => c.setAttribute("aria-hidden", String(Number(c.dataset.beat ?? "-1") !== idx)));
+  };
+  exposeBeat(0);
+
   // Scroll-scrubbed video currentTime with smoothing.
   const cur = new Array<number>(beats.length).fill(0);
   let pinActive = false;
@@ -141,6 +153,7 @@ export function initAnatomy(ctx: Ctx): void {
         const idx = Math.min(beats.length - 1, Math.floor(p * beats.length));
         counter.textContent = `${pad(idx + 1)} / ${pad(beats.length)}`;
         setBg(self.progress * beats.length);
+        exposeBeat(idx);
       },
       onToggle: (self) => {
         pinActive = self.isActive;
@@ -233,7 +246,7 @@ export function initAnatomy(ctx: Ctx): void {
       }
     }
   });
-  if (window.location.search.includes("debug=callouts")) {
+  if (window.location.search.includes("debug=callouts") && import.meta.env.DEV) {
     const label = el("div", "callout-debug", "x%, y%");
     document.body.appendChild(label);
     stage.addEventListener("click", (e) => {

@@ -1,6 +1,12 @@
-// Preloading: critical set (fonts + hero frames) blocks the preloader;
-// everything else queues idle or upgrades on approach.
+// Preloading: critical set (fonts + priority hero frames) blocks the preloader;
+// the rest of the frames stream in the background; everything else decodes
+// lazily near its section or upgrades on approach.
 export type Frame = ImageBitmap | HTMLImageElement;
+
+export function isSaveData(): boolean {
+  const nav = navigator as Navigator & { connection?: { saveData?: boolean } };
+  return nav.connection?.saveData === true;
+}
 
 function idle(cb: () => void): void {
   const w = window as unknown as { requestIdleCallback?: (c: () => void) => number };
@@ -14,14 +20,18 @@ async function decodeBlob(blob: Blob): Promise<Frame> {
   } catch {
     // Hidden tabs / some webviews reject createImageBitmap; <img> decodes everywhere.
     const url = URL.createObjectURL(blob);
-    const img = new Image();
-    img.decoding = "async";
-    await new Promise<void>((resolve, reject) => {
-      img.onload = () => resolve();
-      img.onerror = () => reject(new Error("frame decode failed"));
-      img.src = url;
-    });
-    return img;
+    try {
+      const img = new Image();
+      img.decoding = "async";
+      await new Promise<void>((resolve, reject) => {
+        img.onload = () => resolve();
+        img.onerror = () => reject(new Error("frame decode failed"));
+        img.src = url;
+      });
+      return img;
+    } finally {
+      URL.revokeObjectURL(url);
+    }
   }
 }
 
@@ -41,7 +51,7 @@ export function loadFonts(onOne: () => void): Promise<void> {
   ).then(() => undefined);
 }
 
-function frameOrder(count: number): number[] {
+export function frameOrder(count: number): number[] {
   const order = [0];
   for (let i = 6; i < count; i += 6) order.push(i);
   for (let i = 1; i < count; i++) {
@@ -54,9 +64,11 @@ export async function loadHeroFrames(
   dir: string,
   count: number,
   onOne: () => void,
+  indices?: readonly number[] | null,
+  base?: (Frame | null)[] | null,
 ): Promise<{ frames: Frame[]; loaded: number }> {
-  const frames: (Frame | null)[] = new Array(count).fill(null);
-  const queue = frameOrder(count);
+  const frames: (Frame | null)[] = base ? [...base] : new Array(count).fill(null);
+  const queue = [...(indices ?? frameOrder(count))];
   const pad = (i: number): string => `${dir}${String(i + 1).padStart(4, "0")}.webp`;
 
   async function job(i: number): Promise<void> {
@@ -88,6 +100,8 @@ export async function loadHeroFrames(
   await Promise.all(workers);
 
   // Replace failures with the nearest loaded neighbour.
+  // When only a subset was requested (staged load), neighbours come from
+  // the provided base, so the hero can start on partial frames.
   let loaded = 0;
   for (let i = 0; i < count; i++) {
     if (frames[i]) {
@@ -111,7 +125,10 @@ export async function loadHeroFrames(
 }
 
 // Idle set: decoded with img.decode(), never blocks.
+// Prefer decodeWhenNear for below-fold art; queueIdle is only for tiny
+// above-fold extras.
 export function queueIdle(srcs: string[]): void {
+  if (isSaveData()) return;
   idle(() => {
     for (const src of srcs) {
       const img = new Image();
@@ -122,10 +139,37 @@ export function queueIdle(srcs: string[]): void {
   });
 }
 
+// Decode a section's images once the section nears the viewport instead of
+// all upfront (unconditional pre-decode cost ~150MB decoded — ISS-008).
+export function decodeWhenNear(sel: string, srcs: string[]): void {
+  if (isSaveData() || srcs.length === 0) return;
+  const target = document.querySelector(sel);
+  if (!target) return;
+  const io = new IntersectionObserver(
+    (entries) => {
+      for (const e of entries) {
+        if (!e.isIntersecting) continue;
+        io.disconnect();
+        idle(() => {
+          for (const src of srcs) {
+            const img = new Image();
+            img.decoding = "async";
+            img.src = src;
+            img.decode().catch(() => undefined);
+          }
+        });
+      }
+    },
+    { rootMargin: "100% 0px 100% 0px" },
+  );
+  io.observe(target);
+}
+
 // Videos start preload="metadata"; upgrade once when the section nears the viewport.
+// On Save-Data connections they stay on metadata + poster.
 export function watchLazyVideos(scope: ParentNode): void {
   const videos = Array.from(scope.querySelectorAll("video[data-lazy]")) as HTMLVideoElement[];
-  if (videos.length === 0) return;
+  if (videos.length === 0 || isSaveData()) return;
   const io = new IntersectionObserver(
     (entries) => {
       for (const e of entries) {

@@ -19,8 +19,11 @@ export function initMarquee(ctx: Ctx): void {
       half.appendChild(el("span", "marquee-sep", site.marquee.separator));
     }
   });
-  // Duplicated twice for a seamless loop.
-  track.append(half, half.cloneNode(true) as HTMLElement);
+  // Duplicated twice for a seamless loop; the clone is hidden from
+  // assistive tech so items are not announced twice (ISS-016).
+  const echo = half.cloneNode(true) as HTMLElement;
+  echo.setAttribute("aria-hidden", "true");
+  track.append(half, echo);
   section.appendChild(track);
   app.appendChild(section);
 
@@ -37,6 +40,12 @@ export function initMarquee(ctx: Ctx): void {
     if (halfW > 0) x = -(((-x % halfW) + halfW) % halfW);
   };
   window.addEventListener("resize", measure);
+  // Re-measure once display fonts arrive (ISS-033): the loop point captured
+  // at init predates the font swap and the wrap visibly jumps.
+  window.addEventListener("saga:ready", measure, { once: true });
+  if (document.fonts) {
+    document.fonts.ready.then(() => measure()).catch(() => undefined);
+  }
 
   ctx.ScrollTrigger.create({
     trigger: section,

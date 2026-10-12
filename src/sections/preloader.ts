@@ -1,5 +1,5 @@
 import { el } from "../lib/dom";
-import { loadFonts, loadHeroFrames, type Frame } from "../lib/preload";
+import { frameOrder, isSaveData, loadFonts, loadHeroFrames, type Frame } from "../lib/preload";
 import type { Ctx } from "../lib/engine";
 
 export interface ReadyDetail {
@@ -7,7 +7,11 @@ export interface ReadyDetail {
   fallback: boolean;
 }
 
-export function initPreloader(ctx: Ctx): Promise<void> {
+export interface FramesDetail {
+  frames: Frame[];
+}
+
+export async function initPreloader(ctx: Ctx): Promise<void> {
   const { site, lenis, gsap, ScrollTrigger } = ctx;
   const reduced = ctx.prefersReduced;
   const startedAt = performance.now();
@@ -29,7 +33,13 @@ export function initPreloader(ctx: Ctx): Promise<void> {
   document.body.appendChild(root);
 
   const heroSet = window.innerWidth >= 1024 ? site.assets.hero.desktop : site.assets.hero.mobile;
-  const total = 3 + site.assets.hero.count;
+  // Staged hero load (ISS-003): block only on frame 1 + every 6th (13 frames),
+  // enough for the first paint; the rest stream in the background.
+  const order = frameOrder(site.assets.hero.count);
+  const priority = order.slice(0, 13);
+  const rest = order.slice(13);
+  const partial: (Frame | null)[] = new Array(site.assets.hero.count).fill(null);
+  const total = 3 + priority.length;
   let done = 0;
   let target = 0;
   let displayed = 0;
@@ -57,46 +67,79 @@ export function initPreloader(ctx: Ctx): Promise<void> {
   raf = requestAnimationFrame(loop);
 
   const fontsDone = loadFonts(tick);
-  const framesDone = loadHeroFrames(heroSet.dir, site.assets.hero.count, tick);
+  const firstPass = loadHeroFrames(heroSet.dir, site.assets.hero.count, tick, priority, partial);
+  const timeoutPass = new Promise<null>((resolve) => window.setTimeout(() => resolve(null), 12000));
 
-  return Promise.all([fontsDone, framesDone]).then(([, { frames, loaded }]) => {
-    cancelAnimationFrame(raf);
-    target = 1;
-    displayed = 1;
-    fill.style.width = "100%";
-    count.textContent = "100";
+  const first = await Promise.race([firstPass, timeoutPass]);
+  let frames: Frame[] = [];
+  let loaded = 0;
+  if (first === null) {
+    // Slow network: release with the fallback; a late arrival still upgrades
+    // the hero through saga:frames.
+    console.warn("[preload] hero priority frames timed out; showing fallback until frames arrive");
+    await fontsDone;
+    void firstPass.then((r) => {
+      if (r.loaded > 0) {
+        window.dispatchEvent(
+          new CustomEvent<FramesDetail>("saga:frames", { detail: { frames: r.frames } }),
+        );
+      }
+    });
+  } else {
+    await fontsDone;
+    frames = first.frames;
+    loaded = first.loaded;
+    for (let i = 0; i < frames.length; i++) partial[i] = frames[i];
+  }
 
-    const fallback = loaded === 0;
-    if (fallback) {
-      console.warn("[preload] hero frames failed; showing base-front34 fallback");
-    }
+  // Background: fill the remaining frames, then swap them into the player.
+  if (!isSaveData()) {
+    void loadHeroFrames(heroSet.dir, site.assets.hero.count, () => undefined, rest, partial).then(
+      (r) => {
+        window.dispatchEvent(
+          new CustomEvent<FramesDetail>("saga:frames", { detail: { frames: r.frames } }),
+        );
+      },
+    );
+  }
+
+  cancelAnimationFrame(raf);
+  target = 1;
+  displayed = 1;
+  fill.style.width = "100%";
+  count.textContent = "100";
+
+  const fallback = loaded === 0;
+  if (fallback && first !== null) {
+    console.warn("[preload] hero frames failed; showing base-front34 fallback");
+  }
 
     const elapsed = performance.now() - startedAt;
-    const wait = Math.max(0, 900 - elapsed) + 300;
-    return new Promise<void>((resolve) => {
-      window.setTimeout(() => {
-        document.body.classList.add("is-ready");
-        const exit = (): void => {
-          root.remove();
-          if (!ctx.prefersReduced) lenis.start();
-          ScrollTrigger.refresh();
-          window.setTimeout(() => ScrollTrigger.refresh(), 600);
-          window.dispatchEvent(
-            new CustomEvent<ReadyDetail>("saga:ready", { detail: { frames, fallback } }),
-          );
-          resolve();
-        };
-        if (reduced) {
-          exit();
-        } else {
-          gsap.to(root, {
-            clipPath: "inset(0 0 100% 0)",
-            duration: 0.9,
-            ease: "power4.inOut",
-            onComplete: exit,
-          });
-        }
-      }, wait);
-    });
+    // Fast cached loads skip the branding hold (ISS-037).
+    const wait = elapsed < 400 ? 250 : Math.max(0, 600 - elapsed) + 150;
+  await new Promise<void>((resolve) => {
+    window.setTimeout(() => {
+      document.body.classList.add("is-ready");
+      const exit = (): void => {
+        root.remove();
+        if (!ctx.prefersReduced) lenis.start();
+        ScrollTrigger.refresh();
+        window.setTimeout(() => ScrollTrigger.refresh(), 600);
+        window.dispatchEvent(
+          new CustomEvent<ReadyDetail>("saga:ready", { detail: { frames, fallback } }),
+        );
+        resolve();
+      };
+      if (reduced) {
+        exit();
+      } else {
+        gsap.to(root, {
+          clipPath: "inset(0 0 100% 0)",
+          duration: 0.9,
+          ease: "power4.inOut",
+          onComplete: exit,
+        });
+      }
+    }, wait);
   });
 }

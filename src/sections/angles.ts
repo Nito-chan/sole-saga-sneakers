@@ -56,6 +56,7 @@ export function initAngles(ctx: Ctx): void {
     img.setAttribute("width", String(asset.w));
     img.setAttribute("height", String(asset.h));
     img.setAttribute("decoding", "async");
+    img.setAttribute("loading", "lazy");
     const chip = el("figcaption", "chip angles-chip", site.angles.labels[key] ?? key);
     fig.append(img, chip);
     section.appendChild(fig);

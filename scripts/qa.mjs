@@ -2,7 +2,7 @@ import { chromium } from "playwright";
 import { spawn } from "node:child_process";
 import fs from "node:fs";
 
-const PORT = 4173, URL = `http://localhost:${PORT}/?qa=1`;
+const PORT = 4173, URL = `http://localhost:${PORT}/?qa=1&snap=0`;
 const VIEWPORTS = [
   { name: "desktop", width: 1440, height: 900, mobile: false },
   { name: "mobile",  width: 390,  height: 844, mobile: true  },

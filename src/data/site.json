@@ -53,10 +53,10 @@
     "cta": "Join the waitlist",
     "items": [
       { "id": "01", "name": "COTTON CANDY", "tagline": "Soft on the eyes. Loud on the street.", "bg": "#EADFFB", "text": "#0D0B14", "specs": ["Premium suede and breathable mesh", "Visible air-cushion heel", "Numbered limited run"] },
-      { "id": "02", "name": "TOMATO SODA", "tagline": "Fizz-red energy for every step.", "bg": "#F4776E", "text": "#FFFFFF", "specs": ["Premium suede and breathable mesh", "Visible air-cushion heel", "Numbered limited run"] },
+      { "id": "02", "name": "TOMATO SODA", "tagline": "Fizz-red energy for every step.", "bg": "#F4776E", "text": "#2A0E0B", "specs": ["Premium suede and breathable mesh", "Visible air-cushion heel", "Numbered limited run"] },
       { "id": "03", "name": "BUTTER & COCOA", "tagline": "Warm tones, zero effort.", "bg": "#F5D76E", "text": "#3B2412", "specs": ["Premium suede and breathable mesh", "Visible air-cushion heel", "Numbered limited run"] },
       { "id": "04", "name": "ACID MATCHA", "tagline": "Neon green. No apologies.", "bg": "#C6F135", "text": "#0D0B14", "specs": ["Premium suede and breathable mesh", "Visible air-cushion heel", "Numbered limited run"] },
-      { "id": "05", "name": "COBALT POP", "tagline": "Electric blue with an orange spark.", "bg": "#2B4EFF", "text": "#FFFFFF", "specs": ["Premium suede and breathable mesh", "Visible air-cushion heel", "Numbered limited run"] },
+      { "id": "05", "name": "COBALT POP", "tagline": "Electric blue with an orange spark.", "bg": "#A6C6F7", "text": "#0D0B14", "specs": ["Premium suede and breathable mesh", "Visible air-cushion heel", "Numbered limited run"] },
       { "id": "06", "name": "CHROME NOIR", "tagline": "After-dark armor.", "bg": "#111114", "text": "#F3F3F7", "specs": ["Premium suede and breathable mesh", "Visible air-cushion heel", "Numbered limited run"] }
     ]
   },
@@ -90,11 +90,12 @@
   "footer": {
     "howTitle": "How it's built",
     "how": [
-      "72-frame turntable scrubbed on a canvas",
+      "Hover loop at rest, 72-frame turntable on scroll",
       "GSAP ScrollTrigger and Lenis smooth scroll",
       "AI-generated imagery, hand-processed: cut-outs, alignment, compression",
       "Vite and TypeScript, deployed on Vercel",
-      "Original characters. Concept project, not a real store."
+      "Fan-art concept tribute. Not affiliated with any studio.",
+      "Concept project, not a real store."
     ],
     "links": [],
     "credit": "Designed & built by Nitō",

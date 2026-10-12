@@ -4,18 +4,29 @@
     "desktop": {
       "dir": "/assets/hero/desktop/",
       "w": 1000,
-      "h": 702,
-      "kb": 3894
+      "h": 672,
+      "kb": 3493
     },
     "mobile": {
       "dir": "/assets/hero/mobile/",
       "w": 560,
-      "h": 393,
-      "kb": 1744
+      "h": 376,
+      "kb": 1551
     },
     "flickerSuspects": [
+      22,
+      30,
+      67,
+      68,
+      69,
       72
-    ]
+    ],
+    "hover": {
+      "src": "/assets/hero/hero-hover.mp4",
+      "poster": "/assets/hero/hero-hover-poster.webp",
+      "w": 960,
+      "h": 540
+    }
   },
   "base": {
     "front34": {
@@ -119,6 +130,7 @@
       "slug": "naruto",
       "sneaker": "/assets/anime/anime-01-naruto-sneaker.webp",
       "character": "/assets/anime/anime-01-naruto-character.webp",
+      "face": "/assets/anime/anime-01-naruto-face.webp",
       "sneakerSize": [
         1600,
         1000
@@ -139,6 +151,7 @@
       "slug": "itachi",
       "sneaker": "/assets/anime/anime-02-itachi-sneaker.webp",
       "character": "/assets/anime/anime-02-itachi-character.webp",
+      "face": "/assets/anime/anime-02-itachi-face.webp",
       "sneakerSize": [
         1600,
         1000
@@ -159,6 +172,7 @@
       "slug": "sasuke",
       "sneaker": "/assets/anime/anime-03-sasuke-sneaker.webp",
       "character": "/assets/anime/anime-03-sasuke-character.webp",
+      "face": "/assets/anime/anime-03-sasuke-face.webp",
       "sneakerSize": [
         1600,
         1000
@@ -179,6 +193,7 @@
       "slug": "zoro",
       "sneaker": "/assets/anime/anime-04-zoro-sneaker.webp",
       "character": "/assets/anime/anime-04-zoro-character.webp",
+      "face": "/assets/anime/anime-04-zoro-face.webp",
       "sneakerSize": [
         1600,
         1000
@@ -188,10 +203,10 @@
         1600
       ],
       "palette": {
-        "primary": "#E19B70",
-        "deep": "#3D2F27",
-        "accent": "#87D957",
-        "text": "#0D0B14"
+        "primary": "#59B27B",
+        "deep": "#273D30",
+        "accent": "#D95787",
+        "text": "#FFFFFF"
       }
     },
     {
@@ -199,6 +214,7 @@
       "slug": "gojo",
       "sneaker": "/assets/anime/anime-05-gojo-sneaker.webp",
       "character": "/assets/anime/anime-05-gojo-character.webp",
+      "face": "/assets/anime/anime-05-gojo-face.webp",
       "sneakerSize": [
         1600,
         1000

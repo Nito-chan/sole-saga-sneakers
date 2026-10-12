@@ -14,6 +14,7 @@ interface HeroManifest {
   desktop: FrameSet;
   mobile: FrameSet;
   flickerSuspects: number[];
+  hover?: { src: string; poster: string; w: number; h: number };
 }
 
 interface StillManifest {
@@ -50,6 +51,7 @@ interface AnimeAsset {
   slug: string;
   sneaker: string;
   character: string;
+  face: string;
   sneakerSize: [number, number];
   characterSize: [number, number];
   palette: Palette | null;
@@ -117,6 +119,7 @@ export interface AnimeItem {
   slug: string;
   sneaker: string;
   character: string;
+  face: string;
 }
 
 interface RawBeat {
@@ -206,6 +209,7 @@ function buildAnime(rawItems: RawAnime[]): AnimeItem[] {
       slug: a.slug,
       sneaker: a.sneaker,
       character: a.character,
+      face: a.face,
     });
   }
   for (const a of assets.anime) {

@@ -8,13 +8,13 @@ interface Geo {
   outSY: number; // sneaker exit y (vh)
   inSX: number; // sneaker entry x (vw)
   inSY: number; // sneaker entry y (vh)
-  outCX: number; // character exit x (vw)
-  inCX: number; // character entry x (vw)
+  outPX: number; // portrait exit x (vw)
+  inPX: number; // portrait entry x (vw)
   skewMax: number;
 }
 
-const DESKTOP_GEO: Geo = { outSX: -42, outSY: 14, inSX: -38, inSY: -16, outCX: 36, inCX: 34, skewMax: 5 };
-const MOBILE_GEO: Geo = { outSX: -21, outSY: 7, inSX: -19, inSY: -8, outCX: 18, inCX: 17, skewMax: 3 };
+const DESKTOP_GEO: Geo = { outSX: -30, outSY: 12, inSX: -26, inSY: -12, outPX: 24, inPX: 22, skewMax: 5 };
+const MOBILE_GEO: Geo = { outSX: -15, outSY: 6, inSX: -13, inSY: -6, outPX: 12, inPX: 11, skewMax: 3 };
 
 function maskWrap(child: HTMLElement, spacing: string): HTMLElement {
   const mask = el("div", `a-mask ${spacing}`);
@@ -102,27 +102,17 @@ export function initAnime(ctx: Ctx): void {
   }
 
   interface Pair {
-    charImg: HTMLImageElement;
+    portW: HTMLElement;
+    portImg: HTMLImageElement;
     sneakImg: HTMLImageElement;
+    info: HTMLElement;
     vel: HTMLElement[];
     mouseS: HTMLElement;
-    mouseC: HTMLElement;
+    mouseP: HTMLElement;
     infoLines: HTMLElement[];
   }
   const pairs: Pair[] = [];
-  const infoBlocks: HTMLElement[] = [];
   for (const item of items) {
-    const charW = el("div", "a-char");
-    const charVel = el("div", "a-vel");
-    const charMouse = el("div", "a-mouse");
-    const charImg = el("img", "a-char-img");
-    charImg.setAttribute("src", item.character);
-    charImg.setAttribute("alt", `Character ${item.name}`);
-    charImg.setAttribute("decoding", "async");
-    charMouse.appendChild(charImg);
-    charVel.appendChild(charMouse);
-    charW.appendChild(charVel);
-
     const sneakW = el("div", "a-sneaker");
     const sneakVel = el("div", "a-vel");
     const sneakMouse = el("div", "a-mouse");
@@ -130,10 +120,25 @@ export function initAnime(ctx: Ctx): void {
     sneakImg.setAttribute("src", item.sneaker);
     sneakImg.setAttribute("alt", `Sneaker ${item.name}`);
     sneakImg.setAttribute("decoding", "async");
+    sneakImg.setAttribute("loading", "lazy");
     sneakMouse.appendChild(sneakImg);
     sneakVel.appendChild(sneakMouse);
     sneakW.appendChild(sneakVel);
-    stage.append(charW, sneakW);
+
+    const portW = el("div", "a-port");
+    portW.style.borderColor = item.theme.accent;
+    portW.style.background = item.theme.deep;
+    const portVel = el("div", "a-vel");
+    const portMouse = el("div", "a-mouse");
+    const portImg = el("img", "a-port-img");
+    portImg.setAttribute("src", item.character);
+    portImg.setAttribute("alt", `Character ${item.name}`);
+    portImg.setAttribute("decoding", "async");
+    portImg.setAttribute("loading", "lazy");
+    portMouse.appendChild(portImg);
+    portVel.appendChild(portMouse);
+    portW.appendChild(portVel);
+    stage.append(sneakW, portW);
 
     const info = el("div", "a-info");
     const epithet = el("p", "t-eyebrow a-epithet", item.epithet);
@@ -148,27 +153,42 @@ export function initAnime(ctx: Ctx): void {
     const gaps = ["a-gap-s", "a-gap-s", "a-gap-l", "a-gap-n"];
     lines.forEach((l, li) => info.appendChild(maskWrap(l, gaps[li] ?? "a-gap-n")));
     stage.appendChild(info);
-    infoBlocks.push(info);
 
     pairs.push({
-      charImg,
+      portW,
+      portImg,
       sneakImg,
-      vel: [charVel, sneakVel],
+      info,
+      vel: [portVel, sneakVel],
       mouseS: sneakMouse,
-      mouseC: charMouse,
+      mouseP: portMouse,
       infoLines: lines,
     });
   }
 
+  // Persistent roster rail: mini portraits double as jump buttons.
   const rail = el("div", "a-rail");
   rail.appendChild(el("span", "t-eyebrow a-rail-label", site.anime.eyebrow));
-  const ticks: HTMLElement[] = [];
-  for (let i = 0; i < N; i++) {
-    const tick = el("span", "a-tick");
-    if (i === 0) tick.classList.add("is-active");
-    rail.appendChild(tick);
-    ticks.push(tick);
-  }
+  const minis: HTMLButtonElement[] = [];
+  items.forEach((item, i) => {
+    const b = el("button", "a-mini");
+    b.setAttribute("aria-label", `Show ${item.name}`);
+    b.setAttribute("aria-pressed", i === 0 ? "true" : "false");
+    if (i === 0) b.classList.add("is-active");
+    const img = el("img", "a-mini-img");
+    img.setAttribute("src", item.face);
+    img.setAttribute("alt", "");
+    img.setAttribute("decoding", "async");
+    img.setAttribute("loading", "lazy");
+    b.appendChild(img);
+    b.addEventListener("click", () => {
+      const cst = ctx.ScrollTrigger.getById("anime");
+      if (!cst || ctx.prefersReduced) return;
+      ctx.lenis.scrollTo(cst.start + (i / D) * (cst.end - cst.start), { duration: 1.2 });
+    });
+    rail.appendChild(b);
+    minis.push(b);
+  });
   stage.appendChild(rail);
 
   const speed = el("img", "a-speed");
@@ -178,7 +198,8 @@ export function initAnime(ctx: Ctx): void {
   const ink = el("video", "a-ink");
   ink.muted = true;
   (ink as HTMLVideoElement).playsInline = true;
-  ink.preload = "auto";
+  ink.preload = "metadata";
+  ink.setAttribute("data-lazy", "");
   ink.setAttribute("aria-hidden", "true");
   const inkSrc = el("source", "");
   inkSrc.setAttribute("src", site.assets.fx.inkDark.src);
@@ -192,17 +213,23 @@ export function initAnime(ctx: Ctx): void {
   const cols = el("div", "a-roster-cols");
   const rosterCols: HTMLElement[] = [];
   items.forEach((item, i) => {
-    const col = el("div", "a-roster-col");
-    if (i === Math.floor(N / 2)) col.classList.add("is-center");
-    const cimg = el("img", "a-roster-char");
-    cimg.setAttribute("src", item.character);
-    cimg.setAttribute("alt", "");
-    cimg.setAttribute("decoding", "async");
+    const col = el("div", `a-roster-col pos-${i}`);
+    const glow = el("div", "a-roster-glow");
+    glow.style.background = `radial-gradient(closest-side, ${item.theme.accent}, transparent)`;
     const simg = el("img", "a-roster-sneak");
     simg.setAttribute("src", item.sneaker);
     simg.setAttribute("alt", `Sneaker ${item.name}`);
     simg.setAttribute("decoding", "async");
-    col.append(cimg, simg, el("div", "a-roster-name", item.name));
+    simg.setAttribute("loading", "lazy");
+    const medal = el("div", "a-roster-medal");
+    medal.style.boxShadow = `0 0 28px ${item.theme.accent}`;
+    const cimg = el("img", "a-roster-medimg");
+    cimg.setAttribute("src", item.face);
+    cimg.setAttribute("alt", "");
+    cimg.setAttribute("decoding", "async");
+    cimg.setAttribute("loading", "lazy");
+    medal.appendChild(cimg);
+    col.append(glow, simg, medal, el("div", "a-roster-name", item.name));
     cols.appendChild(col);
     rosterCols.push(col);
   });
@@ -217,23 +244,28 @@ export function initAnime(ctx: Ctx): void {
   let activeIdx = 0;
   let halfStep = 0;
   let hx = 0;
+  // Idle drift gets its own accumulator (ISS-038): sharing hx coupled the
+  // swap pulse to the background drift.
+  let driftX = 0;
 
-  const setTick = (idx: number): void => {
+  const setMini = (idx: number): void => {
     if (idx === activeIdx) return;
     activeIdx = idx;
-    ticks.forEach((t, i) => {
-      t.classList.toggle("is-active", i === idx);
-      t.style.background = i === idx && items[idx] ? items[idx].theme.accent : "";
+    minis.forEach((b, i) => {
+      b.classList.toggle("is-active", i === idx);
+      b.setAttribute("aria-pressed", i === idx ? "true" : "false");
+      b.style.borderColor = i === idx && items[idx] ? items[idx].theme.accent : "";
     });
   };
-  if (items[0]) ticks[0].style.background = items[0].theme.accent;
+  if (items[0]) minis[0].style.borderColor = items[0].theme.accent;
 
   const build = (geo: Geo): void => {
     gsap.set(bgLayers.slice(1), { clipPath: "polygon(0% 0%, 0% 0%, -20% 100%, 0% 100%)" });
     pairs.forEach((p, i) => {
       if (i === 0) return;
-      gsap.set([p.charImg, p.sneakImg], { opacity: 0 });
+      gsap.set([p.portW, p.sneakImg], { opacity: 0 });
       gsap.set(p.infoLines, { yPercent: 120 });
+      p.info.setAttribute("aria-hidden", "true");
     });
     gsap.set(speed, { opacity: 0, scale: 1 });
     gsap.set(ink, { opacity: 0 });
@@ -257,7 +289,9 @@ export function initAnime(ctx: Ctx): void {
         onUpdate: (self) => {
           const p = self.progress * D;
           const idx = Math.min(N - 1, Math.max(0, Math.floor(p)));
-          setTick(idx);
+          setMini(idx);
+          // Masked-off info blocks stay in the a11y tree; expose one (ISS-017).
+          pairs.forEach((pr, j) => pr.info.setAttribute("aria-hidden", String(j !== idx)));
           const step = Math.floor(p);
           if (step !== halfStep) {
             halfStep = step;
@@ -298,7 +332,7 @@ export function initAnime(ctx: Ctx): void {
 
       // Wind-up 0.00–0.18.
       tl.to(out.sneakImg, { scale: 0.94, rotation: -4, x: "-1vw", duration: 0.108 }, at);
-      tl.to(out.charImg, { scale: 0.97, x: "1vw", duration: 0.108 }, at);
+      tl.to(out.portImg, { scale: 0.97, x: "1vw", duration: 0.108 }, at);
       tl.to(speed, { opacity: 0.6, scale: 1.08, duration: 0.108 }, at);
 
       // Hit (out) 0.18–0.46.
@@ -317,17 +351,17 @@ export function initAnime(ctx: Ctx): void {
         at + 0.108,
       );
       tl.to(
-        out.charImg,
+        out.portImg,
         {
-          x: `${geo.outCX}vw`,
+          x: `${geo.outPX}vw`,
           skewX: 18,
           filter: "blur(12px)",
-          opacity: 0,
           duration: 0.168,
           ease: "power3.in",
         },
         at + 0.108,
       );
+      tl.to(out.portW, { opacity: 0, duration: 0.168 }, at + 0.108);
       tl.to(speed, { opacity: 1, scale: 1.35, duration: 0.168 }, at + 0.108);
       tl.to(ink, { opacity: 0.95, duration: 0.168 }, at + 0.108);
       scrubInk(at + 0.108, 0.168);
@@ -348,8 +382,9 @@ export function initAnime(ctx: Ctx): void {
       tl.to(giants[k], { y: "-10vh", opacity: 0, duration: 0.168 }, at + 0.108);
       tl.to(out.infoLines, { yPercent: -120, duration: 0.168, stagger: 0.02 }, at + 0.108);
 
-      // Flash spike.
-      tl.to(flash, { opacity: 0.85, duration: 0.018, ease: "power4.out" }, at + 0.24);
+      // Flash spike, capped low (ISS-005): full-white frames read as a glitch
+      // and are a photosensitivity risk; speedlines + ink carry the impact.
+      tl.to(flash, { opacity: 0.3, duration: 0.018, ease: "power4.out" }, at + 0.24);
       tl.to(flash, { opacity: 0, duration: 0.018, ease: "power4.out" }, at + 0.258);
 
       if (!last && nxt) {
@@ -377,18 +412,18 @@ export function initAnime(ctx: Ctx): void {
           at + 0.276,
         );
         tl.fromTo(
-          nxt.charImg,
-          { x: `${geo.inCX}vw`, skewX: -14, filter: "blur(10px)", opacity: 0 },
+          nxt.portImg,
+          { x: `${geo.inPX}vw`, skewX: -14, filter: "blur(10px)" },
           {
             x: "0vw",
             skewX: 0,
             filter: "blur(0px)",
-            opacity: 1,
             duration: 0.192,
             ease: "back.out(1.2)",
           },
           at + 0.3,
         );
+        tl.fromTo(nxt.portW, { opacity: 0 }, { opacity: 1, duration: 0.192 }, at + 0.3);
         tl.to(ink, { opacity: 0, duration: 0.192 }, at + 0.312);
         tl.to(speed, { opacity: 0, scale: 1.5, duration: 0.144 }, at + 0.36);
         tl.fromTo(
@@ -426,16 +461,21 @@ export function initAnime(ctx: Ctx): void {
   ctx.mm.add("(max-width: 1023px)", () => build(MOBILE_GEO));
 
   // Custom snap: one flick = one swap (never ScrollTrigger snap with Lenis).
+  // Dormant under ?snap=0 so screenshots stay deterministic while a separate
+  // pass exercises the real snap path (ISS-013).
   const isTouch = window.matchMedia("(hover: none)").matches;
   const idleMs = isTouch ? CFG.anime.snapIdleMsTouch : CFG.anime.snapIdleMsDesktop;
   let snapTimer = 0;
   let snapping = false;
+  let lastSnapY = window.scrollY;
+  let lastDir = 1;
   ctx.lenis.on("scroll", () => {
+    const y = window.scrollY;
+    if (y !== lastSnapY) lastDir = y > lastSnapY ? 1 : -1;
+    lastSnapY = y;
     window.clearTimeout(snapTimer);
     if (ctx.prefersReduced) return;
-    // Dormant under ?qa=1 so screenshots are deterministic; the snap path
-    // itself is unchanged and verified by code review.
-    if (window.location.search.includes("qa=1")) return;
+    if (new URLSearchParams(window.location.search).get("snap") === "0") return;
     snapTimer = window.setTimeout(() => {
       const st = ctx.ScrollTrigger.getById("anime");
       if (!st || !st.isActive || snapping) return;
@@ -446,8 +486,8 @@ export function initAnime(ctx: Ctx): void {
       let target: number;
       if (Math.abs(p - near) < CFG.anime.snapEps) target = near;
       else {
-        const dir = ctx.lenis.direction;
-        target = dir > 0 ? Math.ceil(p - CFG.anime.snapEps) : Math.floor(p + CFG.anime.snapEps);
+        // Local direction tracking (ISS-032): lenis.direction is version-fragile.
+        target = lastDir > 0 ? Math.ceil(p - CFG.anime.snapEps) : Math.floor(p + CFG.anime.snapEps);
       }
       target = Math.min(N, Math.max(0, target));
       const y = st.start + (target / D) * (st.end - st.start);
@@ -479,8 +519,8 @@ export function initAnime(ctx: Ctx): void {
       sx: gsap.quickTo(p.mouseS, "x", { duration: 0.6, ease: "power3.out" }),
       sy: gsap.quickTo(p.mouseS, "y", { duration: 0.6, ease: "power3.out" }),
       sr: gsap.quickTo(p.mouseS, "rotation", { duration: 0.6, ease: "power3.out" }),
-      cx: gsap.quickTo(p.mouseC, "x", { duration: 0.6, ease: "power3.out" }),
-      cy: gsap.quickTo(p.mouseC, "y", { duration: 0.6, ease: "power3.out" }),
+      cx: gsap.quickTo(p.mouseP, "x", { duration: 0.6, ease: "power3.out" }),
+      cy: gsap.quickTo(p.mouseP, "y", { duration: 0.6, ease: "power3.out" }),
     }));
     const onMove = (e: PointerEvent): void => {
       const r = stage.getBoundingClientRect();
@@ -491,8 +531,8 @@ export function initAnime(ctx: Ctx): void {
       s.sx(mx * 18);
       s.sy(my * 10);
       s.sr(mx * 2);
-      s.cx(-mx * 10);
-      s.cy(-my * 6);
+      s.cx(-mx * 8);
+      s.cy(-my * 5);
     };
     stage.addEventListener("pointermove", onMove);
     return () => stage.removeEventListener("pointermove", onMove);
@@ -502,7 +542,7 @@ export function initAnime(ctx: Ctx): void {
   gsap.ticker.add((_t, deltaMs) => {
     const st = ctx.ScrollTrigger.getById("anime");
     if (!st || !st.isActive) return;
-    hx += 20 * Math.min(deltaMs / 1000, 0.1);
-    halftone.style.backgroundPosition = `${hx}px 0`;
+    driftX += 20 * Math.min(deltaMs / 1000, 0.1);
+    halftone.style.backgroundPosition = `${hx + driftX}px 0`;
   });
 }

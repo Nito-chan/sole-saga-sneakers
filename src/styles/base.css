@@ -34,6 +34,23 @@ img {
   border: 0;
 }
 
+/* Skip link must appear on keyboard focus (ISS-015). */
+a.sr-only:focus-visible {
+  position: fixed;
+  top: 12px;
+  left: 12px;
+  width: auto;
+  height: auto;
+  margin: 0;
+  padding: 12px 20px;
+  clip: auto;
+  white-space: nowrap;
+  background: var(--ink);
+  color: var(--paper);
+  border-radius: var(--r-sm);
+  z-index: 200;
+}
+
 a {
   color: inherit;
   text-decoration: none;
